@@ -2,84 +2,73 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>QR Scanner</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Библиотека для QR -->
-  <script src="https://unpkg.com/html5-qrcode"></script>
-
+  <title>Мой адрес и контакт</title>
   <style>
-    body { font-family: Arial; padding: 10px; }
-    #reader { width: 100%; max-width: 400px; margin: auto; }
-    input { width: 100%; margin: 5px 0; padding: 8px; }
-    button { width: 100%; padding: 10px; margin-top: 10px; font-size: 16px; }
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .info {
+      margin: 10px 0;
+    }
+    button {
+      padding: 10px 15px;
+      margin: 5px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    img.qr {
+      margin-top: 20px;
+      width: 200px;
+      height: 200px;
+    }
   </style>
 </head>
 <body>
 
-<h3>📷 Сканировать QR</h3>
+  <h1>Контакты</h1>
 
-<div id="reader"></div>
+  <div class="info">
+    <strong>Адрес:</strong> Königsbrunner Straße 5, 86507 Oberotmarshausen
+    <br>
+    <button onclick="window.open('https://www.google.com/maps/search/?api=1&query=K%C3%B6nigsbrunner+Stra%C3%9Fe+5%2C+86507+Oberotmarshausen', '_blank')">
+      Маршрут
+    </button>
+  </div>
 
-<h3>📄 Данные</h3>
-<input id="adresse" placeholder="Адрес">
-<input id="telefon" placeholder="Телефон">
-<input id="betrag" placeholder="Betrag (€)">
+  <div class="info">
+    <strong>Телефон:</strong> 017657968553
+    <br>
+    <button onclick="window.location.href='tel:017657968553'">
+      Позвонить
+    </button>
+  </div>
 
-<button onclick="call()">📞 Позвонить</button>
-<button onclick="navigate()">🗺 Навигация</button>
+  <div class="info">
+    <strong>Сумма:</strong> 24,40 €
+  </div>
 
-<script>
-function onScanSuccess(text) {
-  console.log(text);
-
-  // пример QR:
-  // https://www.google.com/maps/search/?api=1&query=Street 1, 12345 City;tel=+491234567;betrag=12,50
-
-  try {
-    let decoded = decodeURIComponent(text);
-
-    // адрес
-    let qm = decoded.match(/query=([^;&]+)/);
-    if (qm) document.getElementById("adresse").value = qm[1];
-
-    // телефон
-    let tm = decoded.match(/tel=([^;&]+)/);
-    if (tm) document.getElementById("telefon").value = tm[1];
-
-    // betrag
-    let bm = decoded.match(/betrag=([^;&]+)/);
-    if (bm) {
-      document.getElementById("betrag").value =
-        bm[1].replace(",", ".");
-    }
-
-  } catch(e) {
-    alert("Ошибка QR");
-  }
-}
-
-// камера
-let html5QrCode = new Html5Qrcode("reader");
-html5QrCode.start(
-  { facingMode: "environment" },
-  { fps: 10, qrbox: 250 },
-  onScanSuccess
-);
-
-// кнопки
-function call() {
-  let tel = document.getElementById("telefon").value;
-  if (tel) window.location.href = "tel:" + tel;
-}
-
-function navigate() {
-  let adr = document.getElementById("adresse").value;
-  if (adr)
-    window.location.href =
-      "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(adr);
-}
-</script>
+  <div class="info">
+    <strong>QR-код:</strong>
+    <br>
+    <img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://www.google.com/maps/search/?api=1&query=K%C3%B6nigsbrunner+Stra%C3%9Fe+5%2C+86507+Oberotmarshausen" alt="QR Code">
+  </div>
 
 </body>
 </html>
