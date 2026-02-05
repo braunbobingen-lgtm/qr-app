@@ -1,74 +1,351 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Мой адрес и контакт</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 400px;
-      margin: 50px auto;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      text-align: center;
-    }
-    h1 {
-      font-size: 24px;
-      margin-bottom: 20px;
-    }
-    .info {
-      margin: 10px 0;
-    }
-    button {
-      padding: 10px 15px;
-      margin: 5px;
-      font-size: 16px;
-      border: none;
-      border-radius: 5px;
-      background-color: #4CAF50;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    img.qr {
-      margin-top: 20px;
-      width: 200px;
-      height: 200px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>QR Scanner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f2f2f7;
+  margin: 0;
+  padding: 15px;
+}
+.app { max-width: 420px; margin: auto; }
+h2 { text-align: center; margin-bottom: 6px; }
+
+.scan-btn {
+  width: 100%;
+  margin: 6px 0 14px;
+  background: #34c759;
+  color: white;
+  font-size: 16px;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+}
+.scan-btn.off { background: #aaa; }
+
+#reader {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: black;
+}
+
+.scan-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 220px;
+  height: 220px;
+  transform: translate(-50%, -50%);
+  border-radius: 18px;
+  border: 3px solid rgba(255,255,255,0.9);
+  box-shadow: 0 0 0 2000px rgba(0,0,0,0.35);
+  pointer-events: none;
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 14px;
+  margin-top: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+.row:last-child { border-bottom: none; }
+
+.label { color: #888; font-size: 13px; }
+.value { font-size: 16px; font-weight: 500; word-break: break-word; }
+
+.call-btn {
+  background: #34c759;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 18px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.call-btn:disabled { background: #ccc; }
+
+.buttons { display: flex; gap: 10px; margin-top: 15px; }
+button {
+  flex: 1;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  font-size: 15px;
+}
+
+.google { background: #4285f4; color: white; }
+.apple { background: black; color: white; }
+.gray { background: #ddd; }
+
+.history-item {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+.history-item.active {
+  background: #e5f0ff;
+  border-radius: 10px;
+}
+.history-item b { display: block; }
+
+/* кастомное окно */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.modal-box {
+  background: white;
+  border-radius: 16px;
+  padding: 18px;
+  max-width: 300px;
+  width: 90%;
+  text-align: center;
+}
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+.modal-buttons button {
+  flex: 1;
+}
+</style>
 </head>
+
 <body>
+<div class="app">
 
-  <h1>Контакты</h1>
+<h2>📷 QR-Scanner</h2>
+<button id="scanToggle" class="scan-btn">▶️ Scannen</button>
 
-  <div class="info">
-    <strong>Адрес:</strong> Königsbrunner Straße 5, 86507 Oberotmarshausen
-    <br>
-    <button onclick="window.open('https://www.google.com/maps/search/?api=1&query=K%C3%B6nigsbrunner+Stra%C3%9Fe+5%2C+86507+Oberotmarshausen', '_blank')">
-      Маршрут
-    </button>
+<div id="reader"></div>
+
+<div class="card">
+  <div class="row">
+    <div>
+      <div class="label">Adresse</div>
+      <div class="value" id="address">—</div>
+    </div>
   </div>
 
-  <div class="info">
-    <strong>Телефон:</strong> 017657968553
-    <br>
-    <button onclick="window.location.href='tel:017657968553'">
-      Позвонить
-    </button>
+  <div class="row">
+    <div>
+      <div class="label">Telefon</div>
+      <div class="value" id="phone">—</div>
+    </div>
+    <button class="call-btn" id="callBtn" disabled>📞</button>
   </div>
 
-  <div class="info">
-    <strong>Сумма:</strong> 24,40 €
+  <div class="row">
+    <div>
+      <div class="label">Betrag (€)</div>
+      <div class="value" id="amount">—</div>
+    </div>
   </div>
 
-  <div class="info">
-    <strong>QR-код:</strong>
-    <br>
-    <img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://www.google.com/maps/search/?api=1&query=K%C3%B6nigsbrunner+Stra%C3%9Fe+5%2C+86507+Oberotmarshausen" alt="QR Code">
+  <div class="buttons">
+    <button class="gray" id="editBtn">✏️ Bearbeiten</button>
+    <button class="gray" id="addBtn">➕ Manuell</button>
   </div>
+</div>
+
+<div class="buttons">
+  <button class="google" id="googleBtn" disabled>Google Maps</button>
+  <button class="apple" id="appleBtn" disabled>Apple Maps</button>
+</div>
+
+<div class="card">
+  <div class="label">Heutige Einträge</div>
+  <div id="history"></div>
+  <button id="deleteBtn" style="margin-top:10px;background:#ff3b30;color:white;">
+    🗑 Löschen
+  </button>
+</div>
+
+</div>
+
+<!-- Модальное окно -->
+<div class="modal" id="confirmModal">
+  <div class="modal-box">
+    <b>Diesen Eintrag wirklich löschen?</b>
+    <div class="modal-buttons">
+      <button class="gray" onclick="closeModal()">Abbrechen</button>
+      <button style="background:#ff3b30;color:white;" onclick="confirmDelete()">OK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== Datum ===== */
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear() + "-" +
+    String(d.getMonth()+1).padStart(2,"0") + "-" +
+    String(d.getDate()).padStart(2,"0");
+}
+
+/* ===== Daten ===== */
+let history = JSON.parse(localStorage.getItem("qrHistory") || "[]");
+let selectedIndex = null;
+let lastData = {};
+let qr, scannerRunning=false, scanTimer;
+
+/* ===== Auto-Cleanup ===== */
+function cleanupOldEntries() {
+  const today = todayKey();
+  history = history.filter(i => i.date === today);
+  localStorage.setItem("qrHistory", JSON.stringify(history));
+}
+
+/* ===== Anzeige ===== */
+function fill(item, index) {
+  selectedIndex = index;
+  lastData = item;
+
+  address.textContent = item.address || "—";
+  phone.textContent = item.phone || "—";
+  amount.textContent = item.amount || "—";
+
+  callBtn.disabled = !item.phone;
+  googleBtn.disabled = !item.address;
+  appleBtn.disabled = !item.address;
+
+  renderHistory();
+}
+
+function renderHistory() {
+  historyBox.innerHTML = "";
+  history.forEach((item,i)=>{
+    const d=document.createElement("div");
+    d.className="history-item"+(i===selectedIndex?" active":"");
+    d.innerHTML=`<b>${item.address||"—"}</b>
+    📞 ${item.phone||"—"} | 💶 ${item.amount||"—"}
+    <div style="font-size:12px;color:#888">${item.time}</div>`;
+    d.onclick=()=>fill(item,i);
+    historyBox.appendChild(d);
+  });
+}
+
+/* ===== QR ===== */
+function parseQR(text) {
+  let address="", phone="", amount="";
+  const p=text.split(";");
+  if(p[0]&&!p[0].includes("=")) address=p[0].trim();
+  p.forEach(x=>{
+    if(x.startsWith("T=")) phone=x.slice(2);
+    if(x.startsWith("B=")) amount=x.slice(2).replace(",",".");
+  });
+
+  const item={address,phone,amount,time:new Date().toLocaleString(),date:todayKey()};
+  history.unshift(item);
+  history=history.slice(0,50);
+  localStorage.setItem("qrHistory",JSON.stringify(history));
+  fill(item,0);
+}
+
+/* ===== Scanner ===== */
+function startScanner(){
+  if(scannerRunning) return;
+  reader.innerHTML='<div class="scan-frame"></div>';
+  qr=new Html5Qrcode("reader");
+  scannerRunning=true;
+  scanToggle.textContent="⏹ Stop";
+  scanToggle.classList.add("off");
+
+  qr.start({facingMode:"environment"},{fps:20,qrbox:{width:220,height:220}},t=>{
+    stopScanner(); parseQR(t);
+  });
+  scanTimer=setTimeout(stopScanner,5000);
+}
+
+function stopScanner(){
+  if(!scannerRunning) return;
+  qr.stop().catch(()=>{});
+  scannerRunning=false;
+  scanToggle.textContent="▶️ Scannen";
+  scanToggle.classList.remove("off");
+  clearTimeout(scanTimer);
+}
+
+scanToggle.onclick=()=>scannerRunning?stopScanner():startScanner();
+
+/* ===== Aktionen ===== */
+callBtn.onclick=()=>location.href="tel:"+lastData.phone;
+googleBtn.onclick=()=>location.href="https://www.google.com/maps/search/?query="+encodeURIComponent(lastData.address);
+appleBtn.onclick=()=>location.href="https://maps.apple.com/?q="+encodeURIComponent(lastData.address);
+
+/* ===== Edit / Add ===== */
+function editPrompt(item={}){
+  const a=prompt("Adresse:",item.address||""); if(a===null)return;
+  const p=prompt("Telefon:",item.phone||""); if(p===null)return;
+  const b=prompt("Betrag:",item.amount||""); if(b===null)return;
+  return{address:a,phone:p,amount:b.replace(",","."),time:new Date().toLocaleString(),date:todayKey()};
+}
+
+editBtn.onclick=()=>{
+  if(selectedIndex===null) return;
+  const e=editPrompt(history[selectedIndex]);
+  if(!e) return;
+  history[selectedIndex]=e;
+  localStorage.setItem("qrHistory",JSON.stringify(history));
+  fill(e,selectedIndex);
+};
+
+addBtn.onclick=()=>{
+  const e=editPrompt();
+  if(!e) return;
+  history.unshift(e);
+  localStorage.setItem("qrHistory",JSON.stringify(history));
+  fill(e,0);
+};
+
+/* ===== Delete ===== */
+deleteBtn.onclick=()=>{
+  if(selectedIndex===null) return;
+  confirmModal.style.display="flex";
+};
+
+function confirmDelete(){
+  history.splice(selectedIndex,1);
+  selectedIndex=null;
+  localStorage.setItem("qrHistory",JSON.stringify(history));
+  closeModal();
+  renderHistory();
+}
+function closeModal(){ confirmModal.style.display="none"; }
+
+/* ===== Init ===== */
+const address=document.getElementById("address");
+const phone=document.getElementById("phone");
+const amount=document.getElementById("amount");
+const historyBox=document.getElementById("history");
+
+cleanupOldEntries();
+renderHistory();
+</script>
 
 </body>
-</html>
+  </html>
