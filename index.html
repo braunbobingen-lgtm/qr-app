@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>QR Scanner</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
@@ -14,8 +15,13 @@ body {
   padding: 15px;
 }
 .app { max-width: 420px; margin: auto; }
-h2 { text-align: center; margin-bottom: 6px; }
 
+h2 {
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+/* Scan Button */
 .scan-btn {
   width: 100%;
   margin: 6px 0 14px;
@@ -28,26 +34,32 @@ h2 { text-align: center; margin-bottom: 6px; }
 }
 .scan-btn.off { background: #aaa; }
 
+/* Kamera */
 #reader {
-  position: relative;
   border-radius: 16px;
   overflow: hidden;
   background: black;
+  position: relative;
 }
 
 .scan-frame {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 220px;
-  height: 220px;
-  transform: translate(-50%, -50%);
-  border-radius: 18px;
-  border: 3px solid rgba(255,255,255,0.9);
-  box-shadow: 0 0 0 2000px rgba(0,0,0,0.35);
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   pointer-events: none;
 }
+.scan-frame::before {
+  content: "";
+  width: 220px;
+  height: 220px;
+  border: 3px solid rgba(255,255,255,0.9);
+  border-radius: 18px;
+  box-shadow: 0 0 0 2000px rgba(0,0,0,0.35);
+}
 
+/* Cards */
 .card {
   background: white;
   border-radius: 16px;
@@ -66,20 +78,29 @@ h2 { text-align: center; margin-bottom: 6px; }
 .row:last-child { border-bottom: none; }
 
 .label { color: #888; font-size: 13px; }
-.value { font-size: 16px; font-weight: 500; }
+.value { font-size: 16px; font-weight: 500; word-break: break-word; }
 
+/* Call Button */
 .call-btn {
   background: #34c759;
+  border: none;
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: none;
   color: white;
   font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .call-btn:disabled { background: #ccc; }
 
-.buttons { display: flex; gap: 10px; margin-top: 15px; }
+/* Buttons */
+.buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
 button {
   flex: 1;
   padding: 14px;
@@ -92,6 +113,7 @@ button {
 .apple { background: black; color: white; }
 .gray { background: #ddd; }
 
+/* History */
 .history-item {
   padding: 8px;
   border-bottom: 1px solid #eee;
@@ -101,14 +123,16 @@ button {
   background: #e5f0ff;
   border-radius: 10px;
 }
-.history-item b { display: block; }
 
-input {
-  width: 100%;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
+/* Shift report */
+.shift-report input {
+  width: 120px;
+  padding: 6px;
   font-size: 15px;
+}
+.result {
+  font-weight: bold;
+  font-size: 18px;
 }
 </style>
 </head>
@@ -118,16 +142,36 @@ input {
 
 <h2>📷 QR-Scanner</h2>
 <button id="scanToggle" class="scan-btn">▶️ Scannen</button>
+
 <div id="reader"></div>
 
-<!-- ДАННЫЕ -->
 <div class="card">
-  <div class="row"><div><div class="label">Adresse</div><div id="address">—</div></div></div>
   <div class="row">
-    <div><div class="label">Telefon</div><div id="phone">—</div></div>
+    <div>
+      <div class="label">Adresse</div>
+      <div class="value" id="address">—</div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <div class="label">Telefon</div>
+      <div class="value" id="phone">—</div>
+    </div>
     <button class="call-btn" id="callBtn" disabled>📞</button>
   </div>
-  <div class="row"><div><div class="label">Betrag (€)</div><div id="amount">—</div></div></div>
+
+  <div class="row">
+    <div>
+      <div class="label">Betrag (€)</div>
+      <div class="value" id="amount">—</div>
+    </div>
+  </div>
+
+  <div class="buttons">
+    <button class="gray" id="editBtn">✏️ Bearbeiten</button>
+    <button class="gray" id="addBtn">➕ Neu</button>
+  </div>
 </div>
 
 <div class="buttons">
@@ -135,59 +179,141 @@ input {
   <button class="apple" id="appleBtn" disabled>Apple Maps</button>
 </div>
 
-<!-- ИСТОРИЯ -->
-<div class="card">
-  <div class="label">Heutige Einträge</div>
-  <div id="history"></div>
-</div>
-
-<!-- ОТЧЁТ -->
-<div class="card">
+<div class="card shift-report">
   <div class="label">Schichtbericht</div>
 
-  <div class="row"><span>Anzahl Adressen</span><b id="count">0</b></div>
-  <div class="row"><span>Summe Betrag (€)</span><b id="sum">0.00</b></div>
-
-  <div class="row"><span>Lohn (€)</span><input id="lohn" type="number" step="0.01"></div>
-  <div class="row"><span>Benzin (€)</span><input id="benzin" type="number" step="0.01"></div>
-  <div class="row"><span>Sonstige (€)</span><input id="sonstige" type="number" step="0.01"></div>
+  <div class="row">
+    <div>Lohn (€)</div>
+    <input type="number" id="lohn" step="0.01">
+  </div>
+  <div class="row">
+    <div>Benzin (€)</div>
+    <input type="number" id="benzin" step="0.01">
+  </div>
+  <div class="row">
+    <div>Sonstige (€)</div>
+    <input type="number" id="sonstige" step="0.01">
+  </div>
 
   <div class="row">
-    <span><b>Ergebnis (€)</b></span>
-    <b id="result">0.00</b>
+    <div>Ergebnis</div>
+    <div class="result" id="result">0.00 €</div>
   </div>
+</div>
+
+<div class="card">
+  <div class="label">Heutige Scans</div>
+  <div id="history"></div>
+  <button id="deleteBtn" style="margin-top:10px;background:#ff3b30;color:white;">
+    🗑 Ausgewählten Eintrag löschen
+  </button>
 </div>
 
 </div>
 
 <script>
-const today = new Date().toISOString().slice(0,10);
-let history = JSON.parse(localStorage.getItem("qrHistory")||"[]")
-  .filter(i=>i.date===today);
+const todayKey = new Date().toISOString().slice(0,10);
+let history = JSON.parse(localStorage.getItem("qr_"+todayKey) || "[]");
+let selectedIndex = null;
+let lastData = {};
 
-const save = () => localStorage.setItem("qrHistory",JSON.stringify(history));
+const addressEl = address;
+const phoneEl = phone;
+const amountEl = amount;
 
-function updateReport(){
-  const sum = history.reduce((a,b)=>a+(+b.amount||0),0);
-  count.textContent = history.length;
-  sumEl.textContent = sum.toFixed(2);
-
-  const l=+lohn.value||0, b=+benzin.value||0, s=+sonstige.value||0;
-  result.textContent = (sum-l-b-s).toFixed(2);
-
-  localStorage.setItem("shift-"+today,JSON.stringify({l,b,s}));
+function save() {
+  localStorage.setItem("qr_"+todayKey, JSON.stringify(history));
 }
 
-const stored = JSON.parse(localStorage.getItem("shift-"+today)||"{}");
-lohn.value=stored.l||""; benzin.value=stored.b||""; sonstige.value=stored.s||"";
+function fill(item, index) {
+  selectedIndex = index;
+  lastData = item;
+  addressEl.textContent = item.address || "—";
+  phoneEl.textContent = item.phone || "—";
+  amountEl.textContent = item.amount || "—";
+  callBtn.disabled = !item.phone;
+  googleBtn.disabled = !item.address;
+  appleBtn.disabled = !item.address;
+  renderHistory();
+  updateShiftReport();
+}
 
-[lohn,benzin,sonstige].forEach(i=>i.oninput=updateReport);
+function renderHistory() {
+  historyBox.innerHTML = "";
+  history.forEach((item, i) => {
+    const div = document.createElement("div");
+    div.className = "history-item" + (i===selectedIndex?" active":"");
+    div.innerHTML = `<b>${item.address}</b> 💶 ${item.amount}`;
+    div.onclick = () => fill(item, i);
+    historyBox.appendChild(div);
+  });
+}
 
-const count=document.getElementById("count");
-const sumEl=document.getElementById("sum");
-const result=document.getElementById("result");
+function parseQR(text) {
+  let address="", phone="", amount="";
+  text.split(";").forEach(p=>{
+    if (p.startsWith("T=")) phone=p.slice(2);
+    else if (p.startsWith("B=")) amount=p.slice(2);
+    else address=p;
+  });
+  const item={address,phone,amount,time:new Date().toLocaleTimeString()};
+  history.unshift(item);
+  save();
+  fill(item,0);
+}
 
-updateReport();
+function updateShiftReport() {
+  const sum = history.reduce((s,i)=>s+parseFloat(i.amount||0),0);
+  const lohn = parseFloat(lohnInput.value||0);
+  const benzin = parseFloat(benzinInput.value||0);
+  const sonstige = parseFloat(sonstigeInput.value||0);
+  result.textContent = (sum-lohn-benzin-sonstige).toFixed(2)+" €";
+}
+
+callBtn.onclick = ()=>location.href="tel:"+lastData.phone;
+googleBtn.onclick = ()=>location.href=
+  "https://www.google.com/maps/search/?api=1&query="+
+  encodeURIComponent(lastData.address);
+appleBtn.onclick = ()=>location.href=
+  "https://maps.apple.com/?q="+encodeURIComponent(lastData.address);
+
+editBtn.onclick = ()=>{
+  if(selectedIndex==null)return;
+  const a=prompt("Adresse",history[selectedIndex].address);
+  if(a==null)return;
+  history[selectedIndex].address=a;
+  save(); fill(history[selectedIndex],selectedIndex);
+};
+
+addBtn.onclick = ()=>{
+  const a=prompt("Adresse");
+  if(!a)return;
+  const item={address:a,phone:"",amount:"",time:new Date().toLocaleTimeString()};
+  history.unshift(item); save(); fill(item,0);
+};
+
+deleteBtn.onclick = ()=>{
+  if(selectedIndex==null)return;
+  history.splice(selectedIndex,1);
+  selectedIndex=null; save(); renderHistory();
+};
+
+let qr, running=false, timer;
+scanToggle.onclick=()=>{
+  if(running){ qr.stop(); running=false; scanToggle.textContent="▶️ Scannen"; return;}
+  reader.innerHTML='<div class="scan-frame"></div>';
+  qr=new Html5Qrcode("reader");
+  running=true; scanToggle.textContent="⏹ Stop";
+  qr.start({facingMode:"environment"},{fps:15,qrbox:220},t=>{
+    qr.stop(); running=false; scanToggle.textContent="▶️ Scannen"; parseQR(t);
+  });
+  timer=setTimeout(()=>{if(running){qr.stop();running=false;scanToggle.textContent="▶️ Scannen"}},5000);
+};
+
+renderHistory();
+updateShiftReport();
 </script>
+
 </body>
 </html>
+
