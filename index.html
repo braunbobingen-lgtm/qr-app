@@ -21,7 +21,6 @@ h2 {
   margin-bottom: 6px;
 }
 
-/* Scan Button */
 .scan-btn {
   width: 100%;
   margin: 6px 0 14px;
@@ -34,7 +33,6 @@ h2 {
 }
 .scan-btn.off { background: #aaa; }
 
-/* Kamera */
 #reader {
   border-radius: 16px;
   overflow: hidden;
@@ -59,7 +57,6 @@ h2 {
   box-shadow: 0 0 0 2000px rgba(0,0,0,0.35);
 }
 
-/* Cards */
 .card {
   background: white;
   border-radius: 16px;
@@ -80,7 +77,6 @@ h2 {
 .label { color: #888; font-size: 13px; }
 .value { font-size: 16px; font-weight: 500; word-break: break-word; }
 
-/* Call Button */
 .call-btn {
   background: #34c759;
   border: none;
@@ -89,13 +85,9 @@ h2 {
   border-radius: 50%;
   color: white;
   font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 .call-btn:disabled { background: #ccc; }
 
-/* Buttons */
 .buttons {
   display: flex;
   gap: 10px;
@@ -113,7 +105,6 @@ button {
 .apple { background: black; color: white; }
 .gray { background: #ddd; }
 
-/* History */
 .history-item {
   padding: 8px;
   border-bottom: 1px solid #eee;
@@ -124,7 +115,6 @@ button {
   border-radius: 10px;
 }
 
-/* Shift report */
 .shift-report input {
   width: 120px;
   padding: 6px;
@@ -212,28 +202,46 @@ button {
 </div>
 
 <script>
-const todayKey = new Date().toISOString().slice(0,10);
-let history = JSON.parse(localStorage.getItem("qr_"+todayKey) || "[]");
+/* ===== Elemente ===== */
+const addressEl = document.getElementById("address");
+const phoneEl   = document.getElementById("phone");
+const amountEl  = document.getElementById("amount");
+const historyBox = document.getElementById("history");
+
+const callBtn   = document.getElementById("callBtn");
+const googleBtn = document.getElementById("googleBtn");
+const appleBtn  = document.getElementById("appleBtn");
+const scanToggle= document.getElementById("scanToggle");
+
+const lohnInput     = document.getElementById("lohn");
+const benzinInput   = document.getElementById("benzin");
+const sonstigeInput = document.getElementById("sonstige");
+const resultEl      = document.getElementById("result");
+
+/* ===== Daten ===== */
+const todayKey = "qr_" + new Date().toISOString().slice(0,10);
+let history = JSON.parse(localStorage.getItem(todayKey) || "[]");
 let selectedIndex = null;
 let lastData = {};
 
-const addressEl = address;
-const phoneEl = phone;
-const amountEl = amount;
-
+/* ===== Speicherung ===== */
 function save() {
-  localStorage.setItem("qr_"+todayKey, JSON.stringify(history));
+  localStorage.setItem(todayKey, JSON.stringify(history));
 }
 
+/* ===== Anzeige ===== */
 function fill(item, index) {
   selectedIndex = index;
   lastData = item;
+
   addressEl.textContent = item.address || "—";
   phoneEl.textContent = item.phone || "—";
   amountEl.textContent = item.amount || "—";
+
   callBtn.disabled = !item.phone;
   googleBtn.disabled = !item.address;
   appleBtn.disabled = !item.address;
+
   renderHistory();
   updateShiftReport();
 }
@@ -242,72 +250,106 @@ function renderHistory() {
   historyBox.innerHTML = "";
   history.forEach((item, i) => {
     const div = document.createElement("div");
-    div.className = "history-item" + (i===selectedIndex?" active":"");
+    div.className = "history-item" + (i === selectedIndex ? " active" : "");
     div.innerHTML = `<b>${item.address}</b> 💶 ${item.amount}`;
     div.onclick = () => fill(item, i);
     historyBox.appendChild(div);
   });
 }
 
+/* ===== QR ===== */
 function parseQR(text) {
   let address="", phone="", amount="";
-  text.split(";").forEach(p=>{
-    if (p.startsWith("T=")) phone=p.slice(2);
-    else if (p.startsWith("B=")) amount=p.slice(2);
-    else address=p;
+  text.split(";").forEach(p => {
+    if (p.startsWith("T=")) phone = p.slice(2);
+    else if (p.startsWith("B=")) amount = p.slice(2);
+    else address = p;
   });
-  const item={address,phone,amount,time:new Date().toLocaleTimeString()};
+
+  const item = { address, phone, amount, time: new Date().toLocaleTimeString() };
   history.unshift(item);
   save();
-  fill(item,0);
+  fill(item, 0);
 }
 
+/* ===== Schichtbericht ===== */
 function updateShiftReport() {
-  const sum = history.reduce((s,i)=>s+parseFloat(i.amount||0),0);
-  const lohn = parseFloat(lohnInput.value||0);
-  const benzin = parseFloat(benzinInput.value||0);
-  const sonstige = parseFloat(sonstigeInput.value||0);
-  result.textContent = (sum-lohn-benzin-sonstige).toFixed(2)+" €";
+  const sum = history.reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
+  const lohn = parseFloat(lohnInput.value)||0;
+  const benzin = parseFloat(benzinInput.value)||0;
+  const sonstige = parseFloat(sonstigeInput.value)||0;
+  resultEl.textContent = (sum - lohn - benzin - sonstige).toFixed(2) + " €";
 }
 
-callBtn.onclick = ()=>location.href="tel:"+lastData.phone;
-googleBtn.onclick = ()=>location.href=
-  "https://www.google.com/maps/search/?api=1&query="+
+[lohnInput, benzinInput, sonstigeInput].forEach(el =>
+  el.addEventListener("input", updateShiftReport)
+);
+
+/* ===== Buttons ===== */
+callBtn.onclick = () => location.href = "tel:" + lastData.phone;
+googleBtn.onclick = () =>
+  location.href = "https://www.google.com/maps/search/?api=1&query=" +
   encodeURIComponent(lastData.address);
-appleBtn.onclick = ()=>location.href=
-  "https://maps.apple.com/?q="+encodeURIComponent(lastData.address);
+appleBtn.onclick = () =>
+  location.href = "https://maps.apple.com/?q=" +
+  encodeURIComponent(lastData.address);
 
-editBtn.onclick = ()=>{
-  if(selectedIndex==null)return;
-  const a=prompt("Adresse",history[selectedIndex].address);
-  if(a==null)return;
-  history[selectedIndex].address=a;
-  save(); fill(history[selectedIndex],selectedIndex);
+editBtn.onclick = () => {
+  if (selectedIndex === null) return;
+  const a = prompt("Adresse", history[selectedIndex].address);
+  if (a === null) return;
+  history[selectedIndex].address = a;
+  save();
+  fill(history[selectedIndex], selectedIndex);
 };
 
-addBtn.onclick = ()=>{
-  const a=prompt("Adresse");
-  if(!a)return;
-  const item={address:a,phone:"",amount:"",time:new Date().toLocaleTimeString()};
-  history.unshift(item); save(); fill(item,0);
+addBtn.onclick = () => {
+  const a = prompt("Adresse");
+  if (!a) return;
+  const item = { address: a, phone: "", amount: "", time: new Date().toLocaleTimeString() };
+  history.unshift(item);
+  save();
+  fill(item, 0);
 };
 
-deleteBtn.onclick = ()=>{
-  if(selectedIndex==null)return;
-  history.splice(selectedIndex,1);
-  selectedIndex=null; save(); renderHistory();
+deleteBtn.onclick = () => {
+  if (selectedIndex === null) return;
+  history.splice(selectedIndex, 1);
+  selectedIndex = null;
+  save();
+  renderHistory();
+  updateShiftReport();
 };
 
+/* ===== Scanner ===== */
 let qr, running=false, timer;
-scanToggle.onclick=()=>{
-  if(running){ qr.stop(); running=false; scanToggle.textContent="▶️ Scannen"; return;}
+
+scanToggle.onclick = () => {
+  if (running) {
+    qr.stop();
+    running=false;
+    scanToggle.textContent="▶️ Scannen";
+    return;
+  }
   reader.innerHTML='<div class="scan-frame"></div>';
-  qr=new Html5Qrcode("reader");
-  running=true; scanToggle.textContent="⏹ Stop";
-  qr.start({facingMode:"environment"},{fps:15,qrbox:220},t=>{
-    qr.stop(); running=false; scanToggle.textContent="▶️ Scannen"; parseQR(t);
+  qr = new Html5Qrcode("reader");
+  running=true;
+  scanToggle.textContent="⏹ Stop";
+
+  qr.start({facingMode:"environment"},{fps:15,qrbox:220},text=>{
+    qr.stop();
+    running=false;
+    scanToggle.textContent="▶️ Scannen";
+    parseQR(text);
   });
-  timer=setTimeout(()=>{if(running){qr.stop();running=false;scanToggle.textContent="▶️ Scannen"}},5000);
+
+  timer=setTimeout(()=>{
+    if(running){
+      qr.stop();
+      running=false;
+      scanToggle.textContent="▶️ Scannen";
+    }
+  },5000);
 };
 
 renderHistory();
@@ -315,5 +357,4 @@ updateShiftReport();
 </script>
 
 </body>
-</html>
-
+  </html>
