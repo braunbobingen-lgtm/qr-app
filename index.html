@@ -14,13 +14,16 @@ body {
   margin: 0;
   padding: 15px;
 }
-.app { max-width: 420px; margin: auto; }
-
+.app {
+  max-width: 420px;
+  margin: auto;
+}
 h2 {
   text-align: center;
   margin-bottom: 6px;
 }
 
+/* Scanner button */
 .scan-btn {
   width: 100%;
   margin: 6px 0 14px;
@@ -31,30 +34,29 @@ h2 {
   border-radius: 14px;
   border: none;
 }
-.scan-btn.off { background: #aaa; }
+.scan-btn.off {
+  background: #aaa;
+}
 
 #reader {
+  position: relative;
   border-radius: 16px;
   overflow: hidden;
   background: black;
-  position: relative;
 }
 
+/* Scan frame */
 .scan-frame {
   position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
-.scan-frame::before {
-  content: "";
+  top: 50%;
+  left: 50%;
   width: 220px;
   height: 220px;
-  border: 3px solid rgba(255,255,255,0.9);
+  transform: translate(-50%, -50%);
   border-radius: 18px;
+  border: 3px solid rgba(255,255,255,0.9);
   box-shadow: 0 0 0 2000px rgba(0,0,0,0.35);
+  pointer-events: none;
 }
 
 .card {
@@ -82,9 +84,16 @@ h2 {
   border: none;
   width: 36px;
   height: 36px;
+  min-width: 36px;
+  min-height: 36px;
   border-radius: 50%;
-  color: white;
   font-size: 18px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex: 0 0 36px;
 }
 .call-btn:disabled { background: #ccc; }
 
@@ -114,16 +123,11 @@ button {
   background: #e5f0ff;
   border-radius: 10px;
 }
+.history-item b { display: block; }
 
-.shift-report input {
-  width: 120px;
-  padding: 6px;
-  font-size: 15px;
-}
-.result {
-  font-weight: bold;
-  font-size: 18px;
-}
+
+
+
 </style>
 </head>
 
@@ -153,14 +157,14 @@ button {
 
   <div class="row">
     <div>
-      <div class="label">Betrag (€)</div>
+      <div class="label">Betrag</div>
       <div class="value" id="amount">—</div>
     </div>
   </div>
 
   <div class="buttons">
     <button class="gray" id="editBtn">✏️ Bearbeiten</button>
-    <button class="gray" id="addBtn">➕ Neu</button>
+    <button class="gray" id="addBtn">➕ Manuell hinzufügen</button>
   </div>
 </div>
 
@@ -169,67 +173,71 @@ button {
   <button class="apple" id="appleBtn" disabled>Apple Maps</button>
 </div>
 
-<div class="card shift-report">
-  <div class="label">Schichtbericht</div>
-
-  <div class="row">
-    <div>Lohn (€)</div>
-    <input type="number" id="lohn" step="0.01">
-  </div>
-  <div class="row">
-    <div>Benzin (€)</div>
-    <input type="number" id="benzin" step="0.01">
-  </div>
-  <div class="row">
-    <div>Sonstige (€)</div>
-    <input type="number" id="sonstige" step="0.01">
-  </div>
-
-  <div class="row">
-    <div>Ergebnis</div>
-    <div class="result" id="result">0.00 €</div>
-  </div>
-</div>
-
 <div class="card">
-  <div class="label">Heutige Scans</div>
+  <div class="label">Verlauf</div>
   <div id="history"></div>
   <button id="deleteBtn" style="margin-top:10px;background:#ff3b30;color:white;">
-    🗑 Ausgewählten Eintrag löschen
+    🗑 Löschen
   </button>
+</div>
+<div id="confirmBox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1000;">
+  <div style="background:#fff; margin:40% auto; padding:20px; width:85%; max-width:320px; border-radius:16px; text-align:center;">
+    <div style="font-size:16px; margin-bottom:20px;">
+      Eintrag wirklich löschen?
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button id="cancelDel" style="flex:1;padding:12px;border-radius:12px;border:none;background:#ddd;">
+        Abbrechen
+      </button>
+      <button id="okDel" style="flex:1;padding:12px;border-radius:12px;border:none;background:#ff3b30;color:white;">
+        Löschen
+      </button>
+    </div>
+  </div>
 </div>
 
 </div>
 
 <script>
-/* ===== Elemente ===== */
 const addressEl = document.getElementById("address");
-const phoneEl   = document.getElementById("phone");
-const amountEl  = document.getElementById("amount");
-const historyBox = document.getElementById("history");
+const phoneEl = document.getElementById("phone");
+const amountEl = document.getElementById("amount");
 
-const callBtn   = document.getElementById("callBtn");
+const callBtn = document.getElementById("callBtn");
 const googleBtn = document.getElementById("googleBtn");
-const appleBtn  = document.getElementById("appleBtn");
-const scanToggle= document.getElementById("scanToggle");
+const appleBtn = document.getElementById("appleBtn");
+const scanToggle = document.getElementById("scanToggle");
 
-const lohnInput     = document.getElementById("lohn");
-const benzinInput   = document.getElementById("benzin");
-const sonstigeInput = document.getElementById("sonstige");
-const resultEl      = document.getElementById("result");
+const confirmBox = document.getElementById("confirmBox");
+const okDel = document.getElementById("okDel");
+const cancelDel = document.getElementById("cancelDel");
 
-/* ===== Daten ===== */
-const todayKey = "qr_" + new Date().toISOString().slice(0,10);
-let history = JSON.parse(localStorage.getItem(todayKey) || "[]");
+document.getElementById("deleteBtn").onclick = () => {
+  if (selectedIndex === null) return;
+  confirmBox.style.display = "block";
+};
+
+cancelDel.onclick = () => {
+  confirmBox.style.display = "none";
+};
+
+okDel.onclick = () => {
+  history.splice(selectedIndex, 1);
+  selectedIndex = null;
+  localStorage.setItem("qrHistory", JSON.stringify(history));
+  confirmBox.style.display = "none";
+  renderHistory();
+};
+
+let qr;
+let scannerRunning = false;
+let scanTimer = null;
+
+let history = JSON.parse(localStorage.getItem("qrHistory") || "[]");
 let selectedIndex = null;
 let lastData = {};
 
-/* ===== Speicherung ===== */
-function save() {
-  localStorage.setItem(todayKey, JSON.stringify(history));
-}
-
-/* ===== Anzeige ===== */
+/* Anzeige aktualisieren */
 function fill(item, index) {
   selectedIndex = index;
   lastData = item;
@@ -243,49 +251,88 @@ function fill(item, index) {
   appleBtn.disabled = !item.address;
 
   renderHistory();
-  updateShiftReport();
 }
 
+/* Verlauf */
 function renderHistory() {
-  historyBox.innerHTML = "";
-  history.forEach((item, i) => {
+  const box = document.getElementById("history");
+  box.innerHTML = "";
+
+  history.forEach((item, index) => {
     const div = document.createElement("div");
-    div.className = "history-item" + (i === selectedIndex ? " active" : "");
-    div.innerHTML = `<b>${item.address}</b> 💶 ${item.amount}`;
-    div.onclick = () => fill(item, i);
-    historyBox.appendChild(div);
+    div.className = "history-item" + (index === selectedIndex ? " active" : "");
+    div.innerHTML = `
+      <b>${item.address || "—"}</b>
+      📞 ${item.phone || "—"} | 💶 ${item.amount || "—"}
+      <div style="font-size:12px;color:#888">${item.time}</div>
+    `;
+    div.onclick = () => fill(item, index);
+    box.appendChild(div);
   });
 }
 
-/* ===== QR ===== */
+/* QR parsen */
 function parseQR(text) {
   let address="", phone="", amount="";
-  text.split(";").forEach(p => {
-    if (p.startsWith("T=")) phone = p.slice(2);
-    else if (p.startsWith("B=")) amount = p.slice(2);
-    else address = p;
+  const parts = text.split(";");
+
+  if (parts[0] && !parts[0].includes("=")) address = parts[0].trim();
+  parts.forEach(p => {
+    if (p.startsWith("T=")) phone = p.substring(2).trim();
+    if (p.startsWith("B=")) amount = p.substring(2).replace(",", ".").trim();
   });
 
-  const item = { address, phone, amount, time: new Date().toLocaleTimeString() };
+  const item = { address, phone, amount, time: new Date().toLocaleString() };
   history.unshift(item);
-  save();
+  history = history.slice(0, 50);
+
+  localStorage.setItem("qrHistory", JSON.stringify(history));
   fill(item, 0);
 }
 
-/* ===== Schichtbericht ===== */
-function updateShiftReport() {
-  const sum = history.reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
-  const lohn = parseFloat(lohnInput.value)||0;
-  const benzin = parseFloat(benzinInput.value)||0;
-  const sonstige = parseFloat(sonstigeInput.value)||0;
-  resultEl.textContent = (sum - lohn - benzin - sonstige).toFixed(2) + " €";
+/* Bearbeiten / Hinzufügen */
+function promptEdit(item = {}) {
+  const address = prompt("Adresse:", item.address || "");
+  if (address === null) return;
+
+  const phone = prompt("Telefon:", item.phone || "");
+  if (phone === null) return;
+
+  const amount = prompt("Betrag:", item.amount || "");
+  if (amount === null) return;
+
+  return {
+    address,
+    phone,
+    amount: amount.replace(",", "."),
+    time: new Date().toLocaleString()
+  };
 }
 
-[lohnInput, benzinInput, sonstigeInput].forEach(el =>
-  el.addEventListener("input", updateShiftReport)
-);
+document.getElementById("editBtn").onclick = () => {
+  if (selectedIndex === null) {
+    alert("Bitte einen Eintrag auswählen");
+    return;
+  }
+  const edited = promptEdit(history[selectedIndex]);
+  if (!edited) return;
 
-/* ===== Buttons ===== */
+  history[selectedIndex] = edited;
+  localStorage.setItem("qrHistory", JSON.stringify(history));
+  fill(edited, selectedIndex);
+};
+
+document.getElementById("addBtn").onclick = () => {
+  const item = promptEdit();
+  if (!item) return;
+
+  history.unshift(item);
+  localStorage.setItem("qrHistory", JSON.stringify(history));
+  fill(item, 0);
+};
+
+
+/* Aktionen */
 callBtn.onclick = () => location.href = "tel:" + lastData.phone;
 googleBtn.onclick = () =>
   location.href = "https://www.google.com/maps/search/?api=1&query=" +
@@ -294,67 +341,43 @@ appleBtn.onclick = () =>
   location.href = "https://maps.apple.com/?q=" +
   encodeURIComponent(lastData.address);
 
-editBtn.onclick = () => {
-  if (selectedIndex === null) return;
-  const a = prompt("Adresse", history[selectedIndex].address);
-  if (a === null) return;
-  history[selectedIndex].address = a;
-  save();
-  fill(history[selectedIndex], selectedIndex);
-};
+/* Scanner */
+function startScanner() {
+  if (scannerRunning) return;
+  document.getElementById("reader").innerHTML = '<div class="scan-frame"></div>';
+  qr = new Html5Qrcode("reader");
+  scannerRunning = true;
 
-addBtn.onclick = () => {
-  const a = prompt("Adresse");
-  if (!a) return;
-  const item = { address: a, phone: "", amount: "", time: new Date().toLocaleTimeString() };
-  history.unshift(item);
-  save();
-  fill(item, 0);
-};
+  scanToggle.textContent = "⏹ Stoppen";
+  scanToggle.classList.add("off");
 
-deleteBtn.onclick = () => {
-  if (selectedIndex === null) return;
-  history.splice(selectedIndex, 1);
-  selectedIndex = null;
-  save();
-  renderHistory();
-  updateShiftReport();
-};
+  qr.start(
+    { facingMode: "environment" },
+    { fps: 20, qrbox: { width: 220, height: 220 } },
+    text => {
+      stopScanner();
+      parseQR(text);
+    }
+  );
 
-/* ===== Scanner ===== */
-let qr, running=false, timer;
+  scanTimer = setTimeout(stopScanner, 5000);
+}
+
+function stopScanner() {
+  if (!scannerRunning) return;
+  qr.stop().catch(()=>{});
+  scannerRunning = false;
+  scanToggle.textContent = "▶️ Scannen";
+  scanToggle.classList.remove("off");
+  clearTimeout(scanTimer);
+}
 
 scanToggle.onclick = () => {
-  if (running) {
-    qr.stop();
-    running=false;
-    scanToggle.textContent="▶️ Scannen";
-    return;
-  }
-  reader.innerHTML='<div class="scan-frame"></div>';
-  qr = new Html5Qrcode("reader");
-  running=true;
-  scanToggle.textContent="⏹ Stop";
-
-  qr.start({facingMode:"environment"},{fps:15,qrbox:220},text=>{
-    qr.stop();
-    running=false;
-    scanToggle.textContent="▶️ Scannen";
-    parseQR(text);
-  });
-
-  timer=setTimeout(()=>{
-    if(running){
-      qr.stop();
-      running=false;
-      scanToggle.textContent="▶️ Scannen";
-    }
-  },5000);
+  scannerRunning ? stopScanner() : startScanner();
 };
 
 renderHistory();
-updateShiftReport();
 </script>
 
 </body>
-  </html>
+</html>
