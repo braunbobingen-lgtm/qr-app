@@ -125,8 +125,23 @@ button {
 }
 .history-item b { display: block; }
 
-
-
+#shiftReport input {
+  width: 120px;        /* ← ВОТ ГЛАВНОЕ */
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  height: 28px;
+  text-align: right;
+}
+#editBox input {
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
 
 </style>
 </head>
@@ -174,7 +189,7 @@ button {
 </div>
 
 <div class="card">
-  <div class="label">Verlauf</div>
+  <div class="label">Verlauf   </div>
   <div id="history"></div>
   <button id="deleteBtn" style="margin-top:10px;background:#ff3b30;color:white;">
     🗑 Löschen
@@ -196,6 +211,69 @@ button {
   </div>
 </div>
 
+<!-- SCHICHTBERICHT -->
+<div class="card" id="shiftReport">
+  <div class="label">Schichtbericht</div>
+
+  <div class="row">
+    <span>Anzahl Adressen</span>
+    <b id="reportCount">0</b>
+  </div>
+
+  <div class="row">
+    <span>Summe Betrag (€)</span>
+    <b id="reportSum">0.00</b>
+  </div>
+
+  <div class="row">
+    <span>Lohn (€)</span>
+    <input id="lohn" type="number" step="0.01">
+  </div>
+
+  <div class="row">
+    <span>Benzin (€)</span>
+    <input id="benzin" type="number" step="0.01">
+  </div>
+
+  <div class="row">
+    <span>Sonstige (€)</span>
+    <input id="sonstige" type="number" step="0.01">
+  </div>
+
+  <div class="row">
+    <span><b>Ergebnis (€)</b></span>
+    <b id="reportResult">0.00</b>
+  </div>
+</div>
+
+<!-- MANUELL HINZUFÜGEN / BEARBEITEN -->
+<div id="editBox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1000;">
+  <div style="
+    background:#fff;
+    margin:20% auto;
+    padding:20px;
+    width:85%;
+    max-width:340px;
+    border-radius:16px;
+  ">
+    <h3 style="margin-top:0;text-align:center">Eintrag</h3>
+
+    <label class="label">Adresse</label>
+    <input id="editAddress" type="text">
+
+    <label class="label">Telefon</label>
+    <input id="editPhone" type="tel">
+
+    <label class="label">Betrag (€)</label>
+    <input id="editAmount" type="number" step="0.01">
+
+    <div style="display:flex; gap:10px; margin-top:15px;">
+      <button id="editCancel" class="gray">Abbrechen</button>
+      <button id="editSave" class="google">Speichern</button>
+    </div>
+  </div>
+</div>
+
 </div>
 
 <script>
@@ -212,32 +290,44 @@ const confirmBox = document.getElementById("confirmBox");
 const okDel = document.getElementById("okDel");
 const cancelDel = document.getElementById("cancelDel");
 
-document.getElementById("deleteBtn").onclick = () => {
-  if (selectedIndex === null) return;
-  confirmBox.style.display = "block";
-};
-
-cancelDel.onclick = () => {
-  confirmBox.style.display = "none";
-};
-
-okDel.onclick = () => {
-  history.splice(selectedIndex, 1);
-  selectedIndex = null;
-  localStorage.setItem("qrHistory", JSON.stringify(history));
-  confirmBox.style.display = "none";
-  renderHistory();
-};
-
 let qr;
 let scannerRunning = false;
 let scanTimer = null;
 
 let history = JSON.parse(localStorage.getItem("qrHistory") || "[]");
+// 🔄 Автоочистка данных не за сегодня
+const today = new Date().toISOString().slice(0,10);
+history = history.filter(item => item.date === today);
+localStorage.setItem("qrHistory", JSON.stringify(history));
+
 let selectedIndex = null;
 let lastData = {};
 
-/* Anzeige aktualisieren */
+// ===== MANUELL EDIT BOX =====
+const editBox = document.getElementById("editBox");
+const editAddress = document.getElementById("editAddress");
+const editPhone = document.getElementById("editPhone");
+const editAmount = document.getElementById("editAmount");
+const editSave = document.getElementById("editSave");
+const editCancel = document.getElementById("editCancel");
+
+let editIndex = null;
+
+function openEdit(item = {}, index = null) {
+  editIndex = index;
+  editAddress.value = item.address || "";
+  editPhone.value = item.phone || "";
+  editAmount.value = item.amount || "";
+  editBox.style.display = "block";
+}
+
+function closeEdit() {
+  editBox.style.display = "none";
+  editIndex = null;
+}
+
+editCancel.onclick = closeEdit;
+/* ---------------- Anzeige ---------------- */
 function fill(item, index) {
   selectedIndex = index;
   lastData = item;
@@ -251,9 +341,10 @@ function fill(item, index) {
   appleBtn.disabled = !item.address;
 
   renderHistory();
+  updateShiftReport();
 }
 
-/* Verlauf */
+/* ---------------- Verlauf ---------------- */
 function renderHistory() {
   const box = document.getElementById("history");
   box.innerHTML = "";
@@ -271,7 +362,7 @@ function renderHistory() {
   });
 }
 
-/* QR parsen */
+/* ---------------- QR PARSE (ЕДИНСТВЕННАЯ) ---------------- */
 function parseQR(text) {
   let address="", phone="", amount="";
   const parts = text.split(";");
@@ -282,68 +373,44 @@ function parseQR(text) {
     if (p.startsWith("B=")) amount = p.substring(2).replace(",", ".").trim();
   });
 
-  const item = { address, phone, amount, time: new Date().toLocaleString() };
-  history.unshift(item);
-  history = history.slice(0, 50);
-
-  localStorage.setItem("qrHistory", JSON.stringify(history));
-  fill(item, 0);
-}
-
-/* Bearbeiten / Hinzufügen */
-function promptEdit(item = {}) {
-  const address = prompt("Adresse:", item.address || "");
-  if (address === null) return;
-
-  const phone = prompt("Telefon:", item.phone || "");
-  if (phone === null) return;
-
-  const amount = prompt("Betrag:", item.amount || "");
-  if (amount === null) return;
-
-  return {
+  const now = new Date();
+  const item = {
     address,
     phone,
-    amount: amount.replace(",", "."),
-    time: new Date().toLocaleString()
+    amount,
+    time: now.toLocaleTimeString(),
+    date: now.toISOString().slice(0,10)
   };
-}
+  // ❌ Проверка на полный дубликат (адрес + телефон + Betrag)
+    const isDuplicate = history.some(i =>
+      i.address === address &&
+      i.phone === phone &&
+      i.amount === amount &&
+      i.date === now.toISOString().slice(0,10)
+    );
 
-document.getElementById("editBtn").onclick = () => {
-  if (selectedIndex === null) {
-    alert("Bitte einen Eintrag auswählen");
-    return;
-  }
-  const edited = promptEdit(history[selectedIndex]);
-  if (!edited) return;
-
-  history[selectedIndex] = edited;
-  localStorage.setItem("qrHistory", JSON.stringify(history));
-  fill(edited, selectedIndex);
-};
-
-document.getElementById("addBtn").onclick = () => {
-  const item = promptEdit();
-  if (!item) return;
+    if (isDuplicate) {
+      // если полностью совпадает — просто показать существующую запись
+      const index = history.findIndex(i =>
+        i.address === address &&
+        i.phone === phone &&
+        i.amount === amount
+      );
+      fill(history[index], index);
+      return;
+    }
 
   history.unshift(item);
+  history = history.slice(0, 50);
   localStorage.setItem("qrHistory", JSON.stringify(history));
+
   fill(item, 0);
-};
+}
 
-
-/* Aktionen */
-callBtn.onclick = () => location.href = "tel:" + lastData.phone;
-googleBtn.onclick = () =>
-  location.href = "https://www.google.com/maps/search/?api=1&query=" +
-  encodeURIComponent(lastData.address);
-appleBtn.onclick = () =>
-  location.href = "https://maps.apple.com/?q=" +
-  encodeURIComponent(lastData.address);
-
-/* Scanner */
+/* ---------------- Scanner ---------------- */
 function startScanner() {
   if (scannerRunning) return;
+
   document.getElementById("reader").innerHTML = '<div class="scan-frame"></div>';
   qr = new Html5Qrcode("reader");
   scannerRunning = true;
@@ -360,7 +427,7 @@ function startScanner() {
     }
   );
 
-  scanTimer = setTimeout(stopScanner, 5000);
+  scanTimer = setTimeout(stopScanner, 20000);
 }
 
 function stopScanner() {
@@ -372,11 +439,122 @@ function stopScanner() {
   clearTimeout(scanTimer);
 }
 
-scanToggle.onclick = () => {
-  scannerRunning ? stopScanner() : startScanner();
+scanToggle.onclick = () => scannerRunning ? stopScanner() : startScanner();
+
+
+
+document.getElementById("editBtn").onclick = () => {
+  if (selectedIndex === null) {
+    alert("Bitte einen Eintrag auswählen");
+    return;
+  }
+  openEdit(history[selectedIndex], selectedIndex);
 };
 
+document.getElementById("addBtn").onclick = () => {
+  openEdit();
+};
+
+editSave.onclick = () => {
+  if (!editAddress.value.trim()) {
+    alert("Adresse fehlt");
+    return;
+  }
+
+  const now = new Date();
+  const item = {
+    address: editAddress.value.trim(),
+    phone: editPhone.value.trim(),
+    amount: editAmount.value.replace(",", "."),
+    time: now.toLocaleTimeString(),
+    date: now.toISOString().slice(0,10)
+  };
+
+  if (editIndex !== null) {
+    history[editIndex] = item;
+    fill(item, editIndex);
+  } else {
+    history.unshift(item);
+    fill(item, 0);
+  }
+
+  localStorage.setItem("qrHistory", JSON.stringify(history));
+  closeEdit();
+  renderHistory();
+  updateShiftReport();
+};
+
+
+/* ---------------- Aktionen ---------------- */
+callBtn.onclick = () => location.href = "tel:" + lastData.phone;
+googleBtn.onclick = () =>
+  location.href = "https://www.google.com/maps/search/?api=1&query=" +
+  encodeURIComponent(lastData.address);
+appleBtn.onclick = () =>
+  location.href = "https://maps.apple.com/?q=" +
+  encodeURIComponent(lastData.address);
+
+/* ---------------- Löschen ---------------- */
+document.getElementById("deleteBtn").onclick = () => {
+  if (selectedIndex === null) return;
+  confirmBox.style.display = "block";
+};
+
+cancelDel.onclick = () => confirmBox.style.display = "none";
+
+okDel.onclick = () => {
+  history.splice(selectedIndex, 1);
+  selectedIndex = null;
+  localStorage.setItem("qrHistory", JSON.stringify(history));
+  confirmBox.style.display = "none";
+  renderHistory();
+  updateShiftReport();
+};
+
+/* ---------------- Schichtbericht ---------------- */
+function updateShiftReport() {
+  const today = new Date().toISOString().slice(0,10);
+  const todayItems = history.filter(i => i.date === today);
+
+  const sum = todayItems.reduce(
+    (a, i) => a + (parseFloat(i.amount) || 0),
+    0
+  );
+
+  document.getElementById("reportCount").textContent = todayItems.length;
+  document.getElementById("reportSum").textContent = sum.toFixed(2);
+
+  const lohn = parseFloat(document.getElementById("lohn").value) || 0;
+  const benzin = parseFloat(document.getElementById("benzin").value) || 0;
+  const sonstige = parseFloat(document.getElementById("sonstige").value) || 0;
+
+  document.getElementById("reportResult").textContent =
+    (sum - lohn - benzin - sonstige).toFixed(2);
+}
+
+["lohn","benzin","sonstige"].forEach(id =>
+  document.getElementById(id).addEventListener("input", updateShiftReport)
+);
+
 renderHistory();
+updateShiftReport();
+
+
+function openEdit(item = {}, index = null) {
+  editIndex = index;
+  editAddress.value = item.address || "";
+  editPhone.value = item.phone || "";
+  editAmount.value = item.amount || "";
+  editBox.style.display = "block";
+}
+
+function closeEdit() {
+  editBox.style.display = "none";
+  editIndex = null;
+}
+
+editCancel.onclick = closeEdit;
+
 </script>
 
 </body>
