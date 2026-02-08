@@ -142,6 +142,28 @@ button {
   border: 1px solid #ccc;
   font-size: 15px;
 }
+#streetHints {
+  background: #f2f2f7;
+  border-radius: 10px;
+  margin-top: 6px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.street-hint {
+  padding: 10px;
+  font-size: 14px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.street-hint:last-child {
+  border-bottom: none;
+}
+
+.street-hint:hover {
+  background: #e5e5ea;
+}
 
 </style>
 </head>
@@ -260,6 +282,7 @@ button {
 
     <label class="label">Adresse</label>
     <input id="editAddress" type="text">
+    <div id="streetHints"></div>
 
     <label class="label">Telefon</label>
     <input id="editPhone" type="tel">
@@ -277,6 +300,7 @@ button {
 </div>
 
 <script>
+const streetHints = document.getElementById("streetHints");
 const addressEl = document.getElementById("address");
 const phoneEl = document.getElementById("phone");
 const amountEl = document.getElementById("amount");
@@ -324,6 +348,7 @@ function openEdit(item = {}, index = null) {
 function closeEdit() {
   editBox.style.display = "none";
   editIndex = null;
+  streetHints.innerHTML = "";
 }
 
 editCancel.onclick = closeEdit;
@@ -540,21 +565,47 @@ renderHistory();
 updateShiftReport();
 
 
-function openEdit(item = {}, index = null) {
-  editIndex = index;
-  editAddress.value = item.address || "";
-  editPhone.value = item.phone || "";
-  editAmount.value = item.amount || "";
-  editBox.style.display = "block";
-}
-
-function closeEdit() {
-  editBox.style.display = "none";
-  editIndex = null;
-}
-
 editCancel.onclick = closeEdit;
 
+let streets = [];
+
+// Загрузка улиц из файла
+fetch("Strasse.txt")
+  .then(res => res.text())
+  .then(text => {
+    streets = text
+      .split("\n")
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
+
+    console.log("Streets loaded:", streets.length);
+  })
+  .catch(err => console.error("Street file error", err));
+
+
+editAddress.addEventListener("input", () => {
+  const value = editAddress.value.trim().toLowerCase();
+  streetHints.innerHTML = "";
+
+  if (value.length < 2) return;
+
+  const matches = streets
+    .filter(s => s.toLowerCase().includes(value))
+    .slice(0, 6); // максимум 6 подсказок
+
+  matches.forEach(street => {
+    const div = document.createElement("div");
+    div.className = "street-hint";
+    div.textContent = street;
+
+    div.onclick = () => {
+      editAddress.value = street;
+      streetHints.innerHTML = "";
+    };
+
+    streetHints.appendChild(div);
+  });
+});
 </script>
 
 </body>
