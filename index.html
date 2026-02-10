@@ -164,7 +164,23 @@ button {
 .street-hint:hover {
   background: #e5e5ea;
 }
+#addressList li {
+  list-style: none;
+  background: #fff;
+  margin-bottom: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
 
+#addressList li.active {
+  background: #d1f7c4;
+  }
 </style>
 </head>
 
@@ -231,6 +247,16 @@ button {
       </button>
     </div>
   </div>
+  <!-- ADRESS LIST -->
+<div class="card">
+  <div class="label">Adressen Liste</div>
+
+  <button id="selectAllBtn" class="gray" style="margin:8px 0;">
+    Alle markieren
+  </button>
+
+  <ul id="addressList" style="padding:0;margin:0;"></ul>
+</div>
 </div>
 
 <!-- SCHICHTBERICHT -->
@@ -606,7 +632,50 @@ editAddress.addEventListener("input", () => {
     streetHints.appendChild(div);
   });
 });
+  /* ===== Address List ===== */
+
+// добавляем поле active если его нет
+history.forEach(i => {
+  if (typeof i.active === "undefined") i.active = false;
+});
+
+function renderAddressList() {
+  const ul = document.getElementById("addressList");
+  ul.innerHTML = "";
+
+  [...history]
+    .sort((a, b) => (a.address || "").localeCompare(b.address || ""))
+    .forEach((item, index) => {
+      const li = document.createElement("li");
+      li.className = item.active ? "active" : "";
+
+      li.innerHTML = `
+        <span>${item.address || "—"}</span>
+        <b>${item.amount || "—"} €</b>
+      `;
+
+      li.onclick = () => {
+        item.active = !item.active;
+        localStorage.setItem("qrHistory", JSON.stringify(history));
+        renderAddressList();
+      };
+
+      ul.appendChild(li);
+    });
+}
+
+// кнопка "Alle markieren"
+document.getElementById("selectAllBtn").onclick = () => {
+  const allActive = history.every(i => i.active);
+  history.forEach(i => i.active = !allActive);
+  localStorage.setItem("qrHistory", JSON.stringify(history));
+  renderAddressList();
+};
+
+// первый рендер
+renderAddressList();
 </script>
 
 </body>
 </html>
+
