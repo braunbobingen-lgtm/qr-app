@@ -105,13 +105,18 @@ button{
 }
 
 /* SCANNER */
-#reader{
-  position:fixed;
-  inset:0;
-  background:black;
-  z-index:900;
+#reader {
+  position: fixed;
+  inset: 0;
+  background: black;
+  z-index: 900;
 }
 
+#reader video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
 /* BOTTOM NAV */
 .bottom-nav{
   position:fixed;
@@ -313,7 +318,36 @@ function startScanner(){
     showPage("home");
   });
 }
+qr.getRunningTrackSettings().then(settings => {
+  console.log("Camera settings:", settings);
+});
+flashBtn.onclick = async () => {
+  if (!qr || !scannerRunning) return;
 
+  try {
+    const track = qr.getRunningTrack();
+    const capabilities = track.getCapabilities();
+
+    if (!capabilities.torch) {
+      alert("Torch nicht unterstützt");
+      return;
+    }
+
+    await track.applyConstraints({
+      advanced: [{ torch: !flashOn }]
+    });
+
+    flashOn = !flashOn;
+
+    flashBtn.style.background = flashOn
+      ? "rgba(255,255,255,0.9)"
+      : "rgba(0,0,0,0.6)";
+
+  } catch (e) {
+    console.error(e);
+    alert("Torch Fehler");
+  }
+}; 
 function stopScanner(){
   if(!scannerRunning) return;
 
@@ -382,5 +416,6 @@ flashBtn.onclick = async () => {
 
 </body>
   </html>
+
 
 
