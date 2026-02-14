@@ -330,20 +330,21 @@ function parseQR(text){
 
 function startScanner(){
   if(scannerRunning) return;
-  qr=new Html5Qrcode("reader");
-  scannerRunning=true;
 
-  qr.start({facingMode:"environment"},{fps:20,qrbox:250},text=>{
-    stopScanner();
-    parseQR(text);
-    showPage("home");
-  });
+  qr = new Html5Qrcode("reader");
+  scannerRunning = true;
+
+  qr.start(
+    { facingMode: { exact: "environment" } },
+    { fps: 20 },
+    text => {
+      stopScanner();
+      parseQR(text);
+      showPage("home");
+    }
+  );
 }
-qr.getRunningTrackSettings().then(settings => {
-  console.log("Camera settings:", settings);
-});
-flashBtn.onclick = async () => {
-  if (!qr || !scannerRunning) return;
+
 
   try {
     const track = qr.getRunningTrack();
@@ -382,7 +383,41 @@ function stopScanner(){
     flashBtn.style.background = "rgba(0,0,0,0.6)";
   }
 }
+const flashBtn = document.getElementById("flashBtn");
 
+flashBtn.addEventListener("click", async () => {
+
+  if (!qr || !scannerRunning) {
+    alert("Kamera nicht gestartet");
+    return;
+  }
+
+  try {
+    const track = qr.getRunningTrack();
+    const capabilities = track.getCapabilities();
+
+    console.log("Capabilities:", capabilities);
+
+    if (!capabilities.torch) {
+      alert("Torch wird nicht unterstützt");
+      return;
+    }
+
+    flashOn = !flashOn;
+
+    await track.applyConstraints({
+      advanced: [{ torch: flashOn }]
+    });
+
+    flashBtn.style.background = flashOn
+      ? "rgba(255,255,255,0.9)"
+      : "rgba(0,0,0,0.6)";
+
+  } catch (err) {
+    console.error(err);
+    alert("Torch Fehler");
+  }
+});
 scanToggle.onclick=()=>scannerRunning?stopScanner():startScanner();
 
 callBtn.onclick=()=>location.href="tel:"+lastData.phone;
@@ -437,6 +472,7 @@ flashBtn.onclick = async () => {
 
 </body>
   </html>
+
 
 
 
