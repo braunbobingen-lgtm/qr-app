@@ -106,10 +106,10 @@ button{
 
 /* SCANNER */
 #reader{
-  border-radius:16px;
-  overflow:hidden;
+  position:fixed;
+  inset:0;
   background:black;
-  margin-top:15px;
+  z-index:900;
 }
 
 /* BOTTOM NAV */
@@ -136,6 +136,19 @@ button{
 .bottom-nav button.active{
   color:#34c759;
 }
+.flash-btn{
+  position:fixed;
+  top:20px;
+  right:20px;
+  width:45px;
+  height:45px;
+  border-radius:50%;
+  border:none;
+  background:rgba(0,0,0,0.6);
+  color:white;
+  font-size:20px;
+  z-index:1000;
+}  
 </style>
 </head>
 
@@ -149,6 +162,7 @@ button{
     <div class="page" id="page-scanner">
       <h2>📷 Scanner</h2>
       <button id="scanToggle" class="gray">▶️ Scannen</button>
+      <button id="flashBtn" class="flash-btn">🔦</button>
       <div id="reader"></div>
     </div>
 
@@ -219,6 +233,7 @@ button{
 <script>
 let qr;
 let scannerRunning=false;
+let flashOn = false;
 let history=JSON.parse(localStorage.getItem("qrHistory")||"[]");
 let selectedIndex=null;
 let lastData={};
@@ -303,8 +318,16 @@ function startScanner(){
 
 function stopScanner(){
   if(!scannerRunning) return;
+
   qr.stop().catch(()=>{});
   scannerRunning=false;
+
+  // 🔦 выключаем фонарик
+  flashOn = false;
+  const flashBtn = document.getElementById("flashBtn");
+  if (flashBtn) {
+    flashBtn.style.background = "rgba(0,0,0,0.6)";
+  }
 }
 
 scanToggle.onclick=()=>scannerRunning?stopScanner():startScanner();
@@ -335,7 +358,30 @@ function updateShiftReport(){
 
 renderHistory();
 updateShiftReport();
+const flashBtn = document.getElementById("flashBtn");
+
+flashBtn.onclick = async () => {
+  if (!qr) return; // если камера не запущена
+
+  try {
+    await qr.applyVideoConstraints({
+      advanced: [{ torch: !flashOn }]
+    });
+
+    flashOn = !flashOn;
+
+    // меняем цвет кнопки
+    flashBtn.style.background = flashOn
+      ? "rgba(255,255,255,0.9)"
+      : "rgba(0,0,0,0.6)";
+
+  } catch (e) {
+    alert("Torch nicht unterstützt auf diesem Gerät");
+  }
+};
+  
 </script>
 
 </body>
   </html>
+
