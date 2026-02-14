@@ -265,15 +265,17 @@ function showPage(name){
   document.querySelectorAll(".bottom-nav button").forEach(b=>b.classList.remove("active"));
 
   document.getElementById("page-"+name).classList.add("active");
-  event.target.classList.add("active");
 
-  const nav = document.querySelector(".bottom-nav");
+  // активная кнопка
+  document.querySelectorAll(".bottom-nav button").forEach(btn=>{
+    if(btn.getAttribute("onclick").includes(name)){
+      btn.classList.add("active");
+    }
+  });
 
   if(name==="scanner"){
-    nav.style.display="none";
     startScanner();
   } else {
-    nav.style.display="flex";
     stopScanner();
   }
 }
@@ -435,6 +437,7 @@ flashBtn.onclick = async () => {
 
 </body>
   </html>
+
 
 
 
