@@ -105,11 +105,18 @@ button{
 }
 
 /* SCANNER */
+#page-scanner {
+  padding: 0 !important;
+}
+  
 #reader {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   background: black;
-  z-index: 900;
+  z-index: 999;
 }
 
 #reader video {
@@ -256,11 +263,19 @@ const scanToggle=document.getElementById("scanToggle");
 function showPage(name){
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   document.querySelectorAll(".bottom-nav button").forEach(b=>b.classList.remove("active"));
+
   document.getElementById("page-"+name).classList.add("active");
   event.target.classList.add("active");
 
-  if(name==="scanner") startScanner();
-  else stopScanner();
+  const nav = document.querySelector(".bottom-nav");
+
+  if(name==="scanner"){
+    nav.style.display="none";
+    startScanner();
+  } else {
+    nav.style.display="flex";
+    stopScanner();
+  }
 }
 
 function fill(item,index){
@@ -420,6 +435,7 @@ flashBtn.onclick = async () => {
 
 </body>
   </html>
+
 
 
 
