@@ -1,307 +1,480 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<title>QR App</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://unpkg.com/html5-qrcode"></script>
+<!DOCTYPE html>  <html lang="de">  
+<head>  
+<meta charset="UTF-8">  
+<title>QR App</title>  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">  
+<script src="https://unpkg.com/html5-qrcode"></script>  <style>  
+body{  
+  margin:0;  
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;  
+  background:#f2f2f7;  
+}  
+  
+.app-wrapper{  
+  height:100vh;  
+  display:flex;  
+  flex-direction:column;  
+}  
+  
+/* PAGES */  
+.pages{  
+  flex:1;  
+  position:relative;  
+}  
+  
+.page{  
+  position:absolute;  
+  inset:0;  
+  padding:15px;  
+  padding-bottom:90px;  
+  overflow-y:auto;  
+  display:none;  
+}  
+  
+.page.active{  
+  display:block;  
+}  
+  
+h2{  
+  text-align:center;  
+  margin-bottom:10px;  
+}  
+  
+/* CARD */  
+.card{  
+  background:white;  
+  border-radius:16px;  
+  padding:14px;  
+  margin-top:15px;  
+  box-shadow:0 4px 10px rgba(0,0,0,.08);  
+}  
+  
+.row{  
+  display:flex;  
+  justify-content:space-between;  
+  align-items:center;  
+  padding:8px 0;  
+  border-bottom:1px solid #eee;  
+}  
+.row:last-child{border-bottom:none;}  
+  
+.label{color:#888;font-size:13px;}  
+.value{font-size:16px;font-weight:500;word-break:break-word;}  
+  
+.call-btn{  
+  background:#34c759;  
+  border:none;  
+  width:36px;  
+  height:36px;  
+  border-radius:50%;  
+  color:white;  
+}  
+.call-btn:disabled{background:#ccc;}  
+  
+.buttons{  
+  display:flex;  
+  gap:10px;  
+  margin-top:15px;  
+}  
+  
+button{  
+  flex:1;  
+  padding:14px;  
+  border-radius:14px;  
+  border:none;  
+  font-size:15px;  
+}  
+  
+.google{background:#4285f4;color:white;}  
+.apple{background:black;color:white;}  
+.gray{background:#ddd;}  
+  
+.history-item{  
+  padding:8px;  
+  border-bottom:1px solid #eee;  
+  font-size:14px;  
+  cursor:pointer;  
+}  
+  
+.history-item.active{  
+  background:#e5f0ff;  
+  border-radius:10px;  
+}  
+  
+/* SCANNER */  
+#page-scanner {  
+  padding: 0 !important;  
+}  
+    
+#reader {  
+  position: fixed;  
+  top: 0;  
+  left: 0;  
+  width: 100vw;  
+  height: 100vh;  
+  background: black;  
+  z-index: 999;  
+}  
+  
+#reader video {  
+  width: 100% !important;  
+  height: 100% !important;  
+  object-fit: cover !important;  
+}  
+html, body {  
+  height: 100%;  
+  overflow: hidden;  
+}    
+/* BOTTOM NAV */  
+.bottom-nav{  
+  position:fixed;  
+  bottom:0;  
+  left:0;  
+  width:100%;  
+  height:65px;  
+  background:white;  
+  display:flex;  
+  justify-content:space-around;  
+  align-items:center;  
+  box-shadow:0 -2px 10px rgba(0,0,0,.1);  
+  z-index:1000;  
+}  
+  
+.bottom-nav button{  
+  background:none;  
+  border:none;  
+  font-size:22px;  
+}  
+  
+.bottom-nav button.active{  
+  color:#34c759;  
+}  
+.flash-btn{  
+  position:fixed;  
+  top:20px;  
+  right:20px;  
+  width:45px;  
+  height:45px;  
+  border-radius:50%;  
+  border:none;  
+  background:rgba(0,0,0,0.6);  
+  color:white;  
+  font-size:20px;  
+  z-index:1000;  
+}    
+</style>  </head>  <body>  <div class="app-wrapper">    <div class="pages">  <!-- SCANNER (слева) -->  
+<div class="page" id="page-scanner">  
+  <button id="flashBtn" class="flash-btn">🔦</button>  
+  <div id="reader"></div>  
+</div>  
 
-<style>
-body{
-  margin:0;
-  font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
-  background:#f2f2f7;
-}
+<!-- HOME (старт) -->  
+<div class="page active" id="page-home">  
+  <h2>🏠 Home</h2>  
 
-.app-wrapper{
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-}
+  <div class="card">
+  <div class="row">
+    <div>
+      <div class="label">Adresse</div>
+      <div class="value" id="address">—</div>
+    </div>
+  </div>
 
-.pages{
-  flex:1;
-  position:relative;
-}
+  <div class="row">
+    <div>
+      <div class="label">Telefon</div>
+      <div class="value" id="phone">—</div>
+    </div>
+    <button class="call-btn" id="callBtn" disabled>📞</button>
+  </div>
 
-.page{
-  position:absolute;
-  inset:0;
-  padding:15px;
-  padding-bottom:90px;
-  overflow-y:auto;
-  display:none;
-}
+  <div class="row">
+    <div>
+      <div class="label">Betrag</div>
+      <div class="value" id="amount">—</div>
+    </div>
+  </div>
 
-.page.active{
-  display:block;
-}
-
-h2{
-  text-align:center;
-  margin-bottom:10px;
-}
-
-/* CARD */
-.card{
-  background:white;
-  border-radius:16px;
-  padding:14px;
-  margin-top:15px;
-  box-shadow:0 4px 10px rgba(0,0,0,.08);
-}
-
-.row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:8px 0;
-  border-bottom:1px solid #eee;
-}
-.row:last-child{border-bottom:none;}
-
-.label{color:#888;font-size:13px;}
-.value{font-size:16px;font-weight:500;word-break:break-word;}
-
-.call-btn{
-  background:#34c759;
-  border:none;
-  width:36px;
-  height:36px;
-  border-radius:50%;
-  color:white;
-}
-.call-btn:disabled{background:#ccc;}
-
-.buttons{
-  display:flex;
-  gap:10px;
-  margin-top:15px;
-}
-
-button{
-  flex:1;
-  padding:14px;
-  border-radius:14px;
-  border:none;
-  font-size:15px;
-}
-
-.google{background:#4285f4;color:white;}
-.apple{background:black;color:white;}
-
-.history-item{
-  padding:8px;
-  border-bottom:1px solid #eee;
-  font-size:14px;
-  cursor:pointer;
-}
-
-/* SCANNER FULL SCREEN */
-#page-scanner{
-  padding:0 !important;
-}
-
-#reader{
-  position:fixed;
-  inset:0;
-  width:100vw;
-  height:100vh;
-  background:black;
-  z-index:500;
-}
-
-#reader video{
-  width:100% !important;
-  height:100% !important;
-  object-fit:cover !important;
-}
-
-.flash-btn{
-  position:fixed;
-  top:20px;
-  right:20px;
-  width:50px;
-  height:50px;
-  border-radius:50%;
-  border:none;
-  background:rgba(0,0,0,0.6);
-  color:white;
-  font-size:20px;
-  z-index:1000;
-}
-
-/* BOTTOM NAV */
-.bottom-nav{
-  position:fixed;
-  bottom:0;
-  left:0;
-  width:100%;
-  height:65px;
-  background:white;
-  display:flex;
-  justify-content:space-around;
-  align-items:center;
-  box-shadow:0 -2px 10px rgba(0,0,0,.1);
-  z-index:1000;
-}
-
-.bottom-nav button{
-  background:none;
-  border:none;
-  font-size:22px;
-}
-
-.bottom-nav button.active{
-  color:#34c759;
-}
-</style>
-</head>
-
-<body>
-
-<div class="app-wrapper">
-
-<div class="pages">
-
-<!-- SCANNER -->
-<div class="page" id="page-scanner">
-  <button id="flashBtn" class="flash-btn">🔦</button>
-  <div id="reader"></div>
-</div>
-
-<!-- HOME -->
-<div class="page active" id="page-home">
-<h2>🏠 Home</h2>
-
-<div class="card">
-<div class="row">
-<div>
-<div class="label">Adresse</div>
-<div class="value" id="address">—</div>
-</div>
-</div>
-
-<div class="row">
-<div>
-<div class="label">Telefon</div>
-<div class="value" id="phone">—</div>
-</div>
-<button class="call-btn" id="callBtn" disabled>📞</button>
-</div>
-
-<div class="row">
-<div>
-<div class="label">Betrag</div>
-<div class="value" id="amount">—</div>
-</div>
+  <div class="buttons">
+    <button class="gray" id="editBtn">✏️ Bearbeiten</button>
+    <button class="gray" id="addBtn">➕ Manuell hinzufügen</button>
+  </div>
 </div>
 
 <div class="buttons">
-<button class="google" id="googleBtn" disabled>Google</button>
-<button class="apple" id="appleBtn" disabled>Apple</button>
-</div>
+  <button class="google" id="googleBtn" disabled>Google Maps</button>
+  <button class="apple" id="appleBtn" disabled>Apple Maps</button>
 </div>
 
 <div class="card">
-<div class="label">Verlauf</div>
-<div id="history"></div>
+  <div class="label">Verlauf   </div>
+  <div id="history"></div>
+  <button id="deleteBtn" style="margin-top:10px;background:#ff3b30;color:white;">
+    🗑 Löschen
+  </button>
+</div>
+</div>  
+
+<!-- BERICHT (справа) -->  
+<div class="page" id="page-bericht">  
+  <h2>📊 Schichtbericht</h2>  
+
+  <div class="card" id="shiftReport">
+  <div class="label">Schichtbericht</div>
+
+  <div class="row">
+    <span>Anzahl Adressen</span>
+    <b id="reportCount">0</b>
+  </div>
+
+  <div class="row">
+    <span>Summe Betrag (€)</span>
+    <b id="reportSum">0.00</b>
+  </div>
+
+  <div class="row">
+    <span>Lohn (€)</span>
+    <input id="lohn" type="number" step="0.01">
+  </div>
+
+  <div class="row">
+    <span>Benzin (€)</span>
+    <input id="benzin" type="number" step="0.01">
+  </div>
+
+  <div class="row">
+    <span>Sonstige (€)</span>
+    <input id="sonstige" type="number" step="0.01">
+  </div>
+
+  <div class="row">
+    <span><b>Ergebnis (€)</b></span>
+    <b id="reportResult">0.00</b>
+  </div>
+</div> 
 </div>
 
+  </div>    <!-- NAV -->    <div class="bottom-nav">  
+    <button onclick="showPage('scanner')">📷</button>  
+    <button onclick="showPage('home')" class="active">🏠</button>  
+    <button onclick="showPage('bericht')">📊</button>  
+  </div> 
+   <!-- MANUELL HINZUFÜGEN / BEARBEITEN -->
+<div id="editBox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1000;">
+  <div style="
+    background:#fff;
+    margin:20% auto;
+    padding:20px;
+    width:85%;
+    max-width:340px;
+    border-radius:16px;
+  ">
+    <h3 style="margin-top:0;text-align:center">Eintrag</h3>
+
+    <label class="label">Adresse</label>
+    <input id="editAddress" type="text">
+    <div id="streetHints"></div>
+
+    <label class="label">Telefon</label>
+    <input id="editPhone" type="tel">
+
+    <label class="label">Betrag (€)</label>
+    <input id="editAmount" type="number" step="0.01">
+
+    <div style="display:flex; gap:10px; margin-top:15px;">
+      <button id="editCancel" class="gray">Abbrechen</button>
+      <button id="editSave" class="google">Speichern</button>
+    </div>
+  </div>
 </div>
+</div>  
 
-<!-- BERICHT -->
-<div class="page" id="page-bericht">
-<h2>📊 Schichtbericht</h2>
-</div>
-
-</div>
-
-<div class="bottom-nav">
-<button onclick="showPage('scanner', this)">📷</button>
-<button onclick="showPage('home', this)" class="active">🏠</button>
-<button onclick="showPage('bericht', this)">📊</button>
-</div>
-
-</div>
-
-<script>
-let qr;
-let scannerRunning=false;
-let flashOn=false;
-
-function showPage(name,btn){
+<script>  
+let qr;  
+let scannerRunning=false;  
+let flashOn = false;  
+let history=JSON.parse(localStorage.getItem("qrHistory")||"[]");  
+let selectedIndex=null;  
+let lastData={};  
+  
+const addressEl=document.getElementById("address");  
+const phoneEl=document.getElementById("phone");  
+const amountEl=document.getElementById("amount");  
+const callBtn=document.getElementById("callBtn");  
+const googleBtn=document.getElementById("googleBtn");  
+const appleBtn=document.getElementById("appleBtn");  
+const scanToggle=document.getElementById("scanToggle");  
+  
+function showPage(name){
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   document.querySelectorAll(".bottom-nav button").forEach(b=>b.classList.remove("active"));
 
   document.getElementById("page-"+name).classList.add("active");
-  btn.classList.add("active");
+
+  document.querySelectorAll(".bottom-nav button").forEach(btn=>{
+    if(btn.getAttribute("onclick").includes(name)){
+      btn.classList.add("active");
+    }
+  });
 
   if(name==="scanner"){
     startScanner();
   } else {
     stopScanner();
   }
-}
-
-function startScanner(){
-  if(scannerRunning) return;
-
-  qr = new Html5Qrcode("reader");
-  scannerRunning = true;
-
-  qr.start(
-    { facingMode: { exact: "environment" } },
-    { fps: 20 },
-    text => {
-      stopScanner();
-      alert("QR erkannt: " + text);
-      showPage("home", document.querySelectorAll(".bottom-nav button")[1]);
-    }
-  );
-}
-
-function stopScanner(){
-  if(!scannerRunning) return;
-  qr.stop().catch(()=>{});
-  scannerRunning=false;
-  flashOn=false;
-}
-
-const flashBtn=document.getElementById("flashBtn");
-
-flashBtn.addEventListener("click", async ()=>{
-
-  if(!qr || !scannerRunning){
-    alert("Kamera nicht gestartet");
-    return;
-  }
-
-  try{
-    const track=qr.getRunningTrack();
-    const capabilities=track.getCapabilities();
-
-    if(!capabilities.torch){
-      alert("Torch nicht unterstützt");
-      return;
-    }
-
-    flashOn=!flashOn;
-
-    await track.applyConstraints({
-      advanced:[{torch:flashOn}]
-    });
-
-    flashBtn.style.background=flashOn
-      ?"rgba(255,255,255,0.9)"
-      :"rgba(0,0,0,0.6)";
-
-  }catch(e){
-    alert("Torch Fehler");
-  }
-
-});
-</script>
-
-</body>
-</html>
+} 
+  
+function fill(item,index){  
+  selectedIndex=index;  
+  lastData=item;  
+  
+  addressEl.textContent=item.address||"—";  
+  phoneEl.textContent=item.phone||"—";  
+  amountEl.textContent=item.amount||"—";  
+  
+  callBtn.disabled=!item.phone;  
+  googleBtn.disabled=!item.address;  
+  appleBtn.disabled=!item.address;  
+  
+  renderHistory();  
+  updateShiftReport();  
+}  
+  
+function renderHistory(){  
+  const box=document.getElementById("history");  
+  box.innerHTML="";  
+  history.forEach((item,index)=>{  
+    const div=document.createElement("div");  
+    div.className="history-item";  
+    div.innerHTML=`<b>${item.address||"—"}</b> 💶 ${item.amount||"—"}`;  
+    div.onclick=()=>fill(item,index);  
+    box.appendChild(div);  
+  });  
+}  
+  
+function parseQR(text){  
+  let address="",phone="",amount="";  
+  const parts=text.split(";");  
+  
+  if(parts[0]&&!parts[0].includes("=")) address=parts[0].trim();  
+  parts.forEach(p=>{  
+    if(p.startsWith("T=")) phone=p.substring(2).trim();  
+    if(p.startsWith("B=")) amount=p.substring(2).replace(",",".").trim();  
+  });  
+  
+  const now=new Date();  
+  const item={address,phone,amount,date:now.toISOString().slice(0,10)};  
+  
+  history.unshift(item);  
+  history=history.slice(0,50);  
+  localStorage.setItem("qrHistory",JSON.stringify(history));  
+  
+  fill(item,0);  
+}  
+  
+function startScanner(){  
+  if(scannerRunning) return;  
+  qr=new Html5Qrcode("reader");  
+  scannerRunning=true;  
+  
+  qr.start({facingMode:"environment"},{fps:20,qrbox:250},text=>{  
+    stopScanner();  
+    parseQR(text);  
+    showPage("home");  
+  });  
+}  
+qr.getRunningTrackSettings().then(settings => {  
+  console.log("Camera settings:", settings);  
+});  
+flashBtn.onclick = async () => {  
+  if (!qr || !scannerRunning) return;  
+  
+  try {  
+    const track = qr.getRunningTrack();  
+    const capabilities = track.getCapabilities();  
+  
+    if (!capabilities.torch) {  
+      alert("Torch nicht unterstützt");  
+      return;  
+    }  
+  
+    await track.applyConstraints({  
+      advanced: [{ torch: !flashOn }]  
+    });  
+  
+    flashOn = !flashOn;  
+  
+    flashBtn.style.background = flashOn  
+      ? "rgba(255,255,255,0.9)"  
+      : "rgba(0,0,0,0.6)";  
+  
+  } catch (e) {  
+    console.error(e);  
+    alert("Torch Fehler");  
+  }  
+};   
+function stopScanner(){  
+  if(!scannerRunning) return;  
+  
+  qr.stop().catch(()=>{});  
+  scannerRunning=false;  
+  
+  // 🔦 выключаем фонарик  
+  flashOn = false;  
+  const flashBtn = document.getElementById("flashBtn");  
+  if (flashBtn) {  
+    flashBtn.style.background = "rgba(0,0,0,0.6)";  
+  }  
+}  
+  
+scanToggle.onclick=()=>scannerRunning?stopScanner():startScanner();  
+  
+callBtn.onclick=()=>location.href="tel:"+lastData.phone;  
+googleBtn.onclick=()=>location.href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(lastData.address);  
+appleBtn.onclick=()=>location.href="https://maps.apple.com/?q="+encodeURIComponent(lastData.address);  
+  
+function updateShiftReport(){  
+  const today=new Date().toISOString().slice(0,10);  
+  const todayItems=history.filter(i=>i.date===today);  
+  const sum=todayItems.reduce((a,i)=>a+(parseFloat(i.amount)||0),0);  
+  
+  document.getElementById("reportCount").textContent=todayItems.length;  
+  document.getElementById("reportSum").textContent=sum.toFixed(2);  
+  
+  const lohn=parseFloat(document.getElementById("lohn").value)||0;  
+  const benzin=parseFloat(document.getElementById("benzin").value)||0;  
+  const sonstige=parseFloat(document.getElementById("sonstige").value)||0;  
+  
+  document.getElementById("reportResult").textContent=  
+    (sum-lohn-benzin-sonstige).toFixed(2);  
+}  
+  
+["lohn","benzin","sonstige"].forEach(id=>{  
+  document.getElementById(id).addEventListener("input",updateShiftReport);  
+});  
+  
+renderHistory();  
+updateShiftReport();  
+const flashBtn = document.getElementById("flashBtn");  
+  
+flashBtn.onclick = async () => {  
+  if (!qr) return; // если камера не запущена  
+  
+  try {  
+    await qr.applyVideoConstraints({  
+      advanced: [{ torch: !flashOn }]  
+    });  
+  
+    flashOn = !flashOn;  
+  
+    // меняем цвет кнопки  
+    flashBtn.style.background = flashOn  
+      ? "rgba(255,255,255,0.9)"  
+      : "rgba(0,0,0,0.6)";  
+  
+  } catch (e) {  
+    alert("Torch nicht unterstützt auf diesem Gerät");  
+  }  
+};  
+    
+</script>  </body>  
