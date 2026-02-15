@@ -3,13 +3,9 @@
 <meta charset="UTF-8">  
 <title>QR App</title>  
 <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+<script src="https://unpkg.com/html5-qrcode"></script>  
 <style>  
-body{  
-  margin:0;  
-  font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;  
-  background:#f2f2f7;  
-}  
-  
+ 
 .app-wrapper{  
   height:100vh;  
   display:flex;  
@@ -161,7 +157,170 @@ html, body {
   color:white;  
   font-size:20px;  
   z-index:1000;  
-}    
+}  
+------------------------------------------------
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f2f2f7;
+  margin: 0;
+  padding: 15px;
+}
+.app {
+  max-width: 420px;
+  margin: auto;
+}
+h2 {
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+/* Scanner button */
+.scan-btn {
+  width: 100%;
+  margin: 6px 0 14px;
+  background: #34c759;
+  color: white;
+  font-size: 16px;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+}
+.scan-btn.off {
+  background: #aaa;
+}
+
+#reader {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: black;
+}
+
+/* Scan frame */
+.scan-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 220px;
+  height: 220px;
+  transform: translate(-50%, -50%);
+  border-radius: 18px;
+  border: 3px solid rgba(255,255,255,0.9);
+  box-shadow: 0 0 0 2000px rgba(0,0,0,0.35);
+  pointer-events: none;
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 14px;
+  margin-top: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+.row:last-child { border-bottom: none; }
+
+.label { color: #888; font-size: 13px; }
+.value { font-size: 16px; font-weight: 500; word-break: break-word; }
+
+.call-btn {
+  background: #34c759;
+  border: none;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 50%;
+  font-size: 18px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex: 0 0 36px;
+}
+.call-btn:disabled { background: #ccc; }
+
+.buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+button {
+  flex: 1;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  font-size: 15px;
+}
+
+.google { background: #4285f4; color: white; }
+.apple { background: black; color: white; }
+.gray { background: #ddd; }
+
+.history-item {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+.history-item.active {
+  background: #e5f0ff;
+  border-radius: 10px;
+}
+.history-item b { display: block; }
+
+#shiftReport input {
+  width: 120px;        /* ← ВОТ ГЛАВНОЕ */
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  height: 28px;
+  text-align: right;
+}
+#editBox input {
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+#streetHints {
+  background: #f2f2f7;
+  border-radius: 10px;
+  margin-top: 6px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.street-hint {
+  padding: 10px;
+  font-size: 14px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.street-hint:last-child {
+  border-bottom: none;
+}
+
+.street-hint:hover {
+  background: #e5e5ea;
+}
+
+.history-item.done {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
 </style>  </head>  <body>  <div class="app-wrapper">    <div class="pages">  <!-- SCANNER (слева) -->  
 <div class="page" id="page-scanner">  
   <button id="flashBtn" class="flash-btn">🔦</button>  
@@ -291,6 +450,9 @@ html, body {
 
 <script>  
 
+
+
+let qr;  
 let scannerRunning=false;  
 let flashOn = false;  
 let history=JSON.parse(localStorage.getItem("qrHistory")||"[]");  
@@ -372,8 +534,20 @@ function parseQR(text){
   fill(item,0);  
 }  
   
-
- 
+function startScanner(){  
+  if(scannerRunning) return;  
+  qr=new Html5Qrcode("reader");  
+  scannerRunning=true;  
+  
+  qr.start({facingMode:"environment"},{fps:20,qrbox:250},text=>{  
+    stopScanner();  
+    parseQR(text);  
+    showPage("home");  
+  });  
+}  
+qr.getRunningTrackSettings().then(settings => {  
+  console.log("Camera settings:", settings);  
+});  
 flashBtn.onclick = async () => {  
   if (!qr || !scannerRunning) return;  
   
@@ -401,7 +575,19 @@ flashBtn.onclick = async () => {
     alert("Torch Fehler");  
   }  
 };   
- 
+function stopScanner(){  
+  if(!scannerRunning) return;  
+  
+  qr.stop().catch(()=>{});  
+  scannerRunning=false;  
+  
+  // 🔦 выключаем фонарик  
+  flashOn = false;  
+  const flashBtn = document.getElementById("flashBtn");  
+  if (flashBtn) {  
+    flashBtn.style.background = "rgba(0,0,0,0.6)";  
+  }  
+}  
   
 scanToggle.onclick=()=>scannerRunning?stopScanner():startScanner();  
   
@@ -437,7 +623,9 @@ flashBtn.onclick = async () => {
   if (!qr) return; // если камера не запущена  
   
   try {  
-      
+    await qr.applyVideoConstraints({  
+      advanced: [{ torch: !flashOn }]  
+    });  
   
     flashOn = !flashOn;  
   
@@ -450,65 +638,7 @@ flashBtn.onclick = async () => {
     alert("Torch nicht unterstützt auf diesem Gerät");  
   }  
 };  
-    
-</script> 
- <script type="module">
-import QrScanner from "https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner.min.js";
+ 
 
-let scanner = null;
-
-const reader = document.getElementById("reader");
-const flashBtn = document.getElementById("flashBtn");
-
-function startScanner() {
-  if (scannerRunning) return;
-
-  reader.innerHTML = "<video id='qr-video' style='width:100%;height:100%;object-fit:cover;'></video>";
-  const video = document.getElementById("qr-video");
-
-  scanner = new QrScanner(
-    video,
-    result => {
-      stopScanner();
-      window.parseQR(result.data);
-      window.showPage("home");
-    },
-    {
-      preferredCamera: "environment"
-    }
-  );
-
-  scanner.start();
-  scannerRunning = true;
-}
-
-function stopScanner() {
-  if (!scannerRunning) return;
-
-  scanner.stop();
-  scannerRunning = false;
-  flashOn = false;
-
-  flashBtn.style.background = "rgba(0,0,0,0.6)";
-}
-
-flashBtn.onclick = async () => {
-  if (!scanner || !scannerRunning) return;
-
-  try {
-    await scanner.toggleFlash();
-    flashOn = !flashOn;
-
-    flashBtn.style.background = flashOn
-      ? "rgba(255,255,255,0.9)"
-      : "rgba(0,0,0,0.6)";
-  } catch {
-    alert("Torch nicht unterstützt");
-  }
-};
-
-// делаем функции доступными глобально
-window.startScanner = startScanner;
-window.stopScanner = stopScanner;
-</script>
-</body>  
+</script>  
+</body>
