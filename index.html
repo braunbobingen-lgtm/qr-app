@@ -3,20 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <title>Фонарик</title>
+<style>
+body {
+  text-align: center;
+  margin-top: 100px;
+  font-family: Arial;
+}
+button {
+  padding: 20px 40px;
+  font-size: 20px;
+}
+</style>
 </head>
 <body>
 
-<button onclick="toggleFlash()">Включить фонарик</button>
+<button id="btn">Включить фонарик</button>
 
 <script>
-let track;
+let stream = null;
+let track = null;
 let isOn = false;
 
-async function toggleFlash() {
+const btn = document.getElementById("btn");
+
+btn.addEventListener("click", async () => {
   try {
-    if (!track) {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" }
+    if (!stream) {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { exact: "environment" } }
       });
       track = stream.getVideoTracks()[0];
     }
@@ -34,13 +48,14 @@ async function toggleFlash() {
       advanced: [{ torch: isOn }]
     });
 
-    document.querySelector("button").textContent =
-      isOn ? "Выключить фонарик" : "Включить фонарик";
+    btn.textContent = isOn
+      ? "Выключить фонарик"
+      : "Включить фонарик";
 
-  } catch (err) {
-    alert("Ошибка: " + err);
+  } catch (e) {
+    alert("Ошибка: " + e.message);
   }
-}
+});
 </script>
 
 </body>
