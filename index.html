@@ -8,6 +8,7 @@ body {
   text-align:center;
   margin-top:100px;
   font-family:Arial;
+  transition: background 0.3s;
 }
 button {
   padding:20px 40px;
@@ -23,21 +24,28 @@ button {
 let track;
 let stream;
 let isOn = false;
+let screenLight = false;
 
 const btn = document.getElementById("btn");
 
 btn.addEventListener("click", async () => {
+
+  // если уже включён экран-фонарик
+  if (screenLight) {
+    document.body.style.background = "";
+    btn.textContent = "Включить фонарик";
+    screenLight = false;
+    return;
+  }
+
   try {
     if (!stream) {
       stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "environment"
-        }
+        video: { facingMode: "environment" }
       });
       track = stream.getVideoTracks()[0];
     }
 
-    // Пробуем включить torch без проверки capabilities
     isOn = !isOn;
 
     await track.applyConstraints({
@@ -47,8 +55,13 @@ btn.addEventListener("click", async () => {
     btn.textContent = isOn ? "Выключить фонарик" : "Включить фонарик";
 
   } catch (err) {
-    alert("Ошибка: " + err.message);
+
+    // если torch не поддерживается → включаем экран
+    document.body.style.background = "white";
+    btn.textContent = "Выключить экран-фонарик";
+    screenLight = true;
   }
+
 });
 </script>
 
