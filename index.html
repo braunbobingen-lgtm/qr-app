@@ -5,13 +5,13 @@
 <title>Фонарик</title>
 <style>
 body {
-  text-align: center;
-  margin-top: 100px;
-  font-family: Arial;
+  text-align:center;
+  margin-top:100px;
+  font-family:Arial;
 }
 button {
-  padding: 20px 40px;
-  font-size: 20px;
+  padding:20px 40px;
+  font-size:22px;
 }
 </style>
 </head>
@@ -20,8 +20,8 @@ button {
 <button id="btn">Включить фонарик</button>
 
 <script>
-let stream = null;
-let track = null;
+let track;
+let stream;
 let isOn = false;
 
 const btn = document.getElementById("btn");
@@ -30,30 +30,24 @@ btn.addEventListener("click", async () => {
   try {
     if (!stream) {
       stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { exact: "environment" } }
+        video: {
+          facingMode: "environment"
+        }
       });
       track = stream.getVideoTracks()[0];
     }
 
-    const capabilities = track.getCapabilities();
-
-    if (!capabilities.torch) {
-      alert("Фонарик не поддерживается на этом устройстве");
-      return;
-    }
-
+    // Пробуем включить torch без проверки capabilities
     isOn = !isOn;
 
     await track.applyConstraints({
       advanced: [{ torch: isOn }]
     });
 
-    btn.textContent = isOn
-      ? "Выключить фонарик"
-      : "Включить фонарик";
+    btn.textContent = isOn ? "Выключить фонарик" : "Включить фонарик";
 
-  } catch (e) {
-    alert("Ошибка: " + e.message);
+  } catch (err) {
+    alert("Ошибка: " + err.message);
   }
 });
 </script>
