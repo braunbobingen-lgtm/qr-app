@@ -287,15 +287,39 @@ button {
     <h3 style="margin-top:0;text-align:center">Eintrag</h3>
 
     <label class="label">Adresse</label>
-    <input type="text" style="display:none">
-    <input id="editAddress" type="text">
+    <input
+        id="editAddress"
+        type="search"
+        name="no-autofill"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="none"
+        spellcheck="false">
     <div id="streetHints"></div>
 
     <label class="label">Telefon</label>
-    <input id="editPhone" type="tel">
+    <input
+        id="editPhone"
+        type="tel"
+        name="no-autofill-phone"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="none"
+        spellcheck="false"
+        inputmode="numeric">
 
     <label class="label">Betrag (€)</label>
-    <input id="editAmount" type="number" step="0.01">
+    <input
+        id="editAmount"
+        type="nummer"
+        step="0.01"
+        name="no-autofill-amount"
+        autocomplete="off"
+        inputmode="decimal"
+        autocorrect="off"
+        spellcheck="false">
+
+
 
     <div style="display:flex; gap:10px; margin-top:15px;">
       <button id="editCancel" class="gray">Abbrechen</button>
