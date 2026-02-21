@@ -287,14 +287,14 @@ button {
     <h3 style="margin-top:0;text-align:center">Eintrag</h3>
 
     <label class="label">Adresse</label>
-    <input
+<input
   id="editAddress"
-  type="text"
+  type="search"
+  name="no-autofill"
   autocomplete="off"
-  autocorrect="on"
-  autocapitalize="sentences"
-  spellcheck="true"
-  inputmode="text"
+  autocorrect="off"
+  autocapitalize="none"
+  spellcheck="false"
 >
     <div id="streetHints"></div>
 
@@ -659,5 +659,6 @@ editAddress.addEventListener("input", () => {
 
 </body>
 </html>
+
 
 
