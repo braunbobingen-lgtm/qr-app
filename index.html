@@ -299,7 +299,16 @@ button {
     <div id="streetHints"></div>
 
     <label class="label">Telefon</label>
-    <input id="editPhone" type="tel">
+    <input
+  id="editPhone"
+  type="tel"
+  name="no-autofill-phone"
+  autocomplete="off"
+  autocorrect="off"
+  autocapitalize="none"
+  spellcheck="false"
+  inputmode="numeric"
+>
 
     <label class="label">Betrag (€)</label>
     <input id="editAmount" type="number" step="0.01">
@@ -659,6 +668,7 @@ editAddress.addEventListener("input", () => {
 
 </body>
 </html>
+
 
 
 
