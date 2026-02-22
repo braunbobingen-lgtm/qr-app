@@ -14,244 +14,82 @@ body {
   margin: 0;
   padding: 0;
 }
+.screen { display: none; padding:15px; padding-bottom:90px; }
+.screen.active { display: block; }
 
-/* ===== Screens ===== */
-.screen {
-  display: none;
-  padding: 15px;
-  padding-bottom: 90px; /* под нижнюю панель */
-}
-
-.screen.active {
-  display: block;
-}
-
-/* ===== Common Card ===== */
 .card {
-  background: white;
-  border-radius: 16px;
-  padding: 14px;
-  margin-top: 15px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  background:white; border-radius:16px; padding:14px; margin-top:15px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.08);
 }
 
-/* ===== Buttons ===== */
-button {
-  border: none;
-  border-radius: 14px;
-  font-size: 15px;
-  padding: 14px;
-  cursor: pointer;
-}
+button { border:none; border-radius:14px; font-size:15px; padding:14px; cursor:pointer; }
 
-.scan-btn {
-  width: 100%;
-  margin: 6px 0 14px;
-  background: #34c759;
-  color: white;
-  font-size: 16px;
-  border-radius: 14px;
-}
-.scan-btn.off {
-  background: #aaa;
-}
+.scan-btn { width:100%; margin:6px 0 14px; background:#34c759; color:white; font-size:16px; border-radius:14px; }
+.scan-btn.off { background:#aaa; }
 
-.call-btn {
-  background: #34c759;
-  border: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  font-size: 18px;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-.call-btn:disabled { background: #ccc; }
+.call-btn { background:#34c759; width:36px; height:36px; border-radius:50%; font-size:18px; color:white; display:flex; align-items:center; justify-content:center; }
+.call-btn:disabled { background:#ccc; }
 
-.buttons {
-  display: flex;
-  gap: 10px;
-  margin-top: 15px;
-}
-.google { background: #4285f4; color: white; }
-.apple { background: black; color: white; }
-.gray { background: #ddd; }
+.buttons { display:flex; gap:10px; margin-top:15px; }
+.google { background:#4285f4; color:white; }
+.apple { background:black; color:white; }
+.gray { background:#ddd; }
 
-.row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #eee;
-}
-.row:last-child { border-bottom: none; }
+.row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #eee; }
+.row:last-child { border-bottom:none; }
 
-.label { color: #888; font-size: 13px; }
-.value { font-size: 16px; font-weight: 500; word-break: break-word; }
+.label { color:#888; font-size:13px; }
+.value { font-size:16px; font-weight:500; word-break:break-word; }
 
-/* ===== Scan Frame ===== */
-#reader {
-  position: relative;
-  border-radius: 16px;
-  overflow: hidden;
-  background: black;
-}
-.scan-frame {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 220px;
-  height: 220px;
-  transform: translate(-50%, -50%);
-  border-radius: 18px;
-  border: 3px solid rgba(255,255,255,0.9);
-  box-shadow: 0 0 0 2000px rgba(0,0,0,0.35);
-  pointer-events: none;
-}
+#reader { position:relative; border-radius:16px; overflow:hidden; background:black; }
+.scan-frame { position:absolute; top:50%; left:50%; width:220px; height:220px; transform:translate(-50%,-50%); border-radius:18px; border:3px solid rgba(255,255,255,0.9); box-shadow:0 0 0 2000px rgba(0,0,0,0.35); pointer-events:none; }
 
-/* ===== History ===== */
-.history-item {
-  padding: 8px;
-  border-bottom: 1px solid #eee;
-  font-size: 14px;
-}
-.history-item.active { background: #e5f0ff; }
-.history-item.done {
-  opacity: 0.5;
-  text-decoration: line-through;
-  background: #d1f5d3;  
-}
-.history-item b { display: block; }
+.history-item { padding:8px; border-bottom:1px solid #eee; font-size:14px; }
+.history-item.active { background:#e5f0ff; }
+.history-item.done { opacity:0.5; text-decoration:line-through; background:#d1f5d3; }
+.history-item b { display:block; }
 
-/* ===== Street hints ===== */
-#streetHints {
-  background: #f2f2f7;
-  border-radius: 10px;
-  margin-top: 6px;
-  max-height: 160px;
-  overflow-y: auto;
-}
-.street-hint {
-  padding: 10px;
-  font-size: 14px;
-  border-bottom: 1px solid #ddd;
-  cursor: pointer;
-}
-.street-hint:hover { background: #e5e5ea; }
-.street-hint:last-child { border-bottom: none; }
+#streetHints { background:#f2f2f7; border-radius:10px; margin-top:6px; max-height:160px; overflow-y:auto; }
+.street-hint { padding:10px; font-size:14px; border-bottom:1px solid #ddd; cursor:pointer; }
+.street-hint:hover { background:#e5e5ea; }
+.street-hint:last-child { border-bottom:none; }
 
-/* ===== Edit Box ===== */
-#editBox {
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.4);
-  z-index:1000;
-}
-#editBox .edit-content {
-  background:#fff;
-  margin:20% auto;
-  padding:20px;
-  width:85%;
-  max-width:340px;
-  border-radius:16px;
-}
+#editBox { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1000; }
+#editBox .edit-content { background:#fff; margin:20% auto; padding:20px; width:85%; max-width:340px; border-radius:16px; }
 
-/* ===== Confirm Box ===== */
-#confirmBox {
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.4);
-  z-index:1000;
-}
-#confirmBox .confirm-content {
-  background:#fff;
-  margin:40% auto;
-  padding:20px;
-  width:85%;
-  max-width:320px;
-  border-radius:16px;
-  text-align:center;
-}
+#confirmBox { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1000; }
+#confirmBox .confirm-content { background:#fff; margin:40% auto; padding:20px; width:85%; max-width:320px; border-radius:16px; text-align:center; }
 
-/* ===== Shift Report ===== */
-#shiftReport input {
-  width: 120px;
-  padding: 2px 6px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 13px;
-  height: 28px;
-  text-align: right;
-}
+#shiftReport input { width:120px; padding:2px 6px; border-radius:6px; border:1px solid #ccc; font-size:13px; height:28px; text-align:right; }
 
-/* ===== Bottom Navigation ===== */
 .bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 75px;
-  background: white;
-  border-top: 1px solid #ddd;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
-  z-index: 999;
+  position:fixed; bottom:0; left:0; right:0; height:75px; background:white;
+  border-top:1px solid #ddd; display:flex; justify-content:space-around; align-items:center;
+  box-shadow:0 -2px 10px rgba(0,0,0,0.08); z-index:999;
 }
-.bottom-nav button {
-  background: none;
-  border: none;
-  font-size: 14px;
-  flex: 1;
-  height: 100%;
-  color: #666;
-}
-.bottom-nav button.active {
-  color: #007aff;
-  font-weight: 600;
-}
+.bottom-nav button { background:none; border:none; font-size:14px; flex:1; height:100%; color:#666; }
+.bottom-nav button.active { color:#007aff; font-weight:600; }
 </style>
 </head>
-
 <body>
 
+<!-- ===== SCREENS ===== -->
 <div id="screen-scanner" class="screen">
   <h2>📷 QR-Scanner</h2>
   <button id="scanToggle" class="scan-btn">▶️ Scannen</button>
   <div id="reader"></div>
-  
   <div class="card">
+    <div class="row"><div><div class="label">Adresse</div><div class="value" id="address">—</div></div></div>
     <div class="row">
-      <div>
-        <div class="label">Adresse</div>
-        <div class="value" id="address">—</div>
-      </div>
-    </div>
-    <div class="row">
-      <div>
-        <div class="label">Telefon</div>
-        <div class="value" id="phone">—</div>
-      </div>
+      <div><div class="label">Telefon</div><div class="value" id="phone">—</div></div>
       <button class="call-btn" id="callBtn" disabled>📞</button>
     </div>
-    <div class="row">
-      <div>
-        <div class="label">Betrag</div>
-        <div class="value" id="amount">—</div>
-      </div>
-    </div>
+    <div class="row"><div><div class="label">Betrag</div><div class="value" id="amount">—</div></div></div>
     <div class="buttons">
       <button class="gray" id="editBtn">✏️ Bearbeiten</button>
       <button class="gray" id="addBtn">➕ Manuell hinzufügen</button>
     </div>
   </div>
-  
   <div class="buttons">
     <button class="google" id="googleBtn" disabled>Google Maps</button>
     <button class="apple" id="appleBtn" disabled>Apple Maps</button>
@@ -262,16 +100,13 @@ button {
   <div class="card">
     <div class="label">Verlauf</div>
     <div id="history"></div>
-    <button id="deleteBtn" style="margin-top:10px;background:#ff3b30;color:white;">
-      🗑 Löschen
-    </button>
+    <button id="deleteBtn" style="margin-top:10px;background:#ff3b30;color:white;">🗑 Löschen</button>
   </div>
 </div>
 
 <div id="screen-report" class="screen">
   <div class="card" id="shiftReport">
     <div class="label">Schichtbericht</div>
-
     <div class="row"><span>Anzahl Adressen</span><b id="reportCount">0</b></div>
     <div class="row"><span>Summe Betrag (€)</span><b id="reportSum">0.00</b></div>
     <div class="row"><span>Lohn (€)</span><input id="lohn" type="number" step="0.01"></div>
@@ -281,20 +116,17 @@ button {
   </div>
 </div>
 
-<!-- Edit Box -->
+<!-- ===== Edit Box ===== -->
 <div id="editBox">
   <div class="edit-content">
     <h3 style="text-align:center;margin-top:0;">Eintrag</h3>
     <label class="label">Adresse</label>
-    <input id="editAddress" type="search" name="no-autofill" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+    <input id="editAddress" type="search" autocomplete="off">
     <div id="streetHints"></div>
-
     <label class="label">Telefon</label>
     <input id="editPhone" type="tel">
-
     <label class="label">Betrag (€)</label>
     <input id="editAmount" type="number" step="0.01">
-
     <div style="display:flex; gap:10px; margin-top:15px;">
       <button id="editCancel" class="gray">Abbrechen</button>
       <button id="editSave" class="google">Speichern</button>
@@ -302,7 +134,7 @@ button {
   </div>
 </div>
 
-<!-- Confirm Box -->
+<!-- ===== Confirm Box ===== -->
 <div id="confirmBox">
   <div class="confirm-content">
     <div style="font-size:16px; margin-bottom:20px;">Eintrag wirklich löschen?</div>
@@ -313,7 +145,7 @@ button {
   </div>
 </div>
 
-<!-- Bottom Nav -->
+<!-- ===== Bottom Navigation ===== -->
 <div class="bottom-nav">
   <button data-screen="scanner">📷<br>Scanner</button>
   <button data-screen="home">🏠<br>Home</button>
@@ -324,15 +156,12 @@ button {
 // ===== Variables =====
 let qr, scannerRunning=false, scanTimer=null;
 let history = JSON.parse(localStorage.getItem("qrHistory")||"[]");
-
-// Автоочистка прошлых данных
 const today = new Date().toISOString().slice(0,10);
 history = history.filter(i=>i.date===today);
 localStorage.setItem("qrHistory",JSON.stringify(history));
-
 let selectedIndex=null, lastData={};
 
-// Elements
+// ===== Elements =====
 const addressEl = document.getElementById("address");
 const phoneEl = document.getElementById("phone");
 const amountEl = document.getElementById("amount");
@@ -347,10 +176,8 @@ const editPhone = document.getElementById("editPhone");
 const editAmount = document.getElementById("editAmount");
 const editSave = document.getElementById("editSave");
 const editCancel = document.getElementById("editCancel");
-
 const streetHints = document.getElementById("streetHints");
 
-// Screens
 const screens = {
   scanner: document.getElementById("screen-scanner"),
   home: document.getElementById("screen-home"),
@@ -367,151 +194,318 @@ function showScreen(name){
   document.querySelector(`[data-screen="${name}"]`).classList.add("active");
 }
 navButtons.forEach(btn=>btn.onclick=()=>showScreen(btn.dataset.screen));
+showScreen("home"); // старт с Домика
 
-// Старт с Домика
-showScreen("home");
+// ===== Functions =====
+// сюда вставим все функции: fill, renderHistory, parseQR, startScanner, stopScanner, редактирование, удаление, отчет, подсказки
 
-// ===== Fill & Render =====
-function fill(item,index){
-  selectedIndex=index;
-  lastData=item;
-  addressEl.textContent=item.address||"—";
-  phoneEl.textContent=item.phone||"—";
-  amountEl.textContent=item.amount||"—";
+let editIndex = null;
 
-  callBtn.disabled=!item.phone;
-  googleBtn.disabled=!item.address;
-  appleBtn.disabled=!item.address;
+function openEdit(item = {}, index = null) {
+  editIndex = index;
+  editAddress.value = item.address || "";
+  editPhone.value = item.phone || "";
+  editAmount.value = item.amount || "";
+  editBox.style.display = "block";
+}
+
+function closeEdit() {
+  editBox.style.display = "none";
+  editIndex = null;
+  streetHints.innerHTML = "";
+}
+
+editCancel.onclick = closeEdit;
+/* ---------------- Anzeige ---------------- */
+function fill(item, index) {
+  selectedIndex = index;
+  lastData = item;
+
+  addressEl.textContent = item.address || "—";
+  phoneEl.textContent = item.phone || "—";
+  amountEl.textContent = item.amount || "—";
+
+  callBtn.disabled = !item.phone;
+  googleBtn.disabled = !item.address;
+  appleBtn.disabled = !item.address;
 
   renderHistory();
   updateShiftReport();
 }
 
-function renderHistory(){
+/* ---------------- Verlauf ---------------- */
+function renderHistory() {
   const box = document.getElementById("history");
-  box.innerHTML="";
-  history.forEach((item,index)=>{
-    const div=document.createElement("div");
-    div.className="history-item"+(index===selectedIndex?" active":"")+(item.done?" done":"");
-    div.innerHTML=`<b>${item.address||"—"}</b>📞 ${item.phone||"—"} | 💶 ${item.amount||"—"}<div style="font-size:12px;color:#888">${item.time}</div>`;
-    div.onclick=()=>fill(item,index);
-    // swipe
-    let startX=0;
-    div.addEventListener("touchstart",e=>startX=e.touches[0].clientX);
-    div.addEventListener("touchend",e=>{
-      const diff=e.changedTouches[0].clientX-startX;
-      if(diff>60){ item.done=true; localStorage.setItem("qrHistory",JSON.stringify(history)); renderHistory(); }
-      if(diff<-60){ item.done=false; localStorage.setItem("qrHistory",JSON.stringify(history)); renderHistory(); }
+  box.innerHTML = "";
+
+  history.forEach((item, index) => {
+    const div = document.createElement("div");
+    div.className =
+      "history-item" +
+      (index === selectedIndex ? " active" : "") +
+      (item.done ? " done" : "");
+
+    div.innerHTML = `
+      <b>${item.address || "—"}</b>
+      📞 ${item.phone || "—"} | 💶 ${item.amount || "—"}
+      <div style="font-size:12px;color:#888">${item.time}</div>
+    `;
+
+    // 👉 ТАП — как было
+    div.onclick = () => fill(item, index);
+
+    // 👇 СВАЙП
+    let startX = 0;
+
+    div.addEventListener("touchstart", e => {
+      startX = e.touches[0].clientX;
     });
+
+    div.addEventListener("touchend", e => {
+      const endX = e.changedTouches[0].clientX;
+      const diff = endX - startX;
+
+      // 👉 вправо — erledigt
+      if (diff > 60) {
+        item.done = true;
+        localStorage.setItem("qrHistory", JSON.stringify(history));
+        renderHistory();
+      }
+
+      // 👈 влево — вернуть
+      if (diff < -60) {
+        item.done = false;
+        localStorage.setItem("qrHistory", JSON.stringify(history));
+        renderHistory();
+      }
+    });
+
     box.appendChild(div);
   });
 }
 
-// ===== QR Parsing =====
-function parseQR(text){
-  let address="",phone="",amount="";
-  const parts=text.split(";");
-  if(parts[0] && !parts[0].includes("=")) address=parts[0].trim();
-  parts.forEach(p=>{
-    if(p.startsWith("T=")) phone=p.substring(2).trim();
-    if(p.startsWith("B=")) amount=p.substring(2).replace(",",".").trim();
+/* ---------------- QR PARSE (ЕДИНСТВЕННАЯ) ---------------- */
+function parseQR(text) {
+  let address="", phone="", amount="";
+  const parts = text.split(";");
+
+  if (parts[0] && !parts[0].includes("=")) address = parts[0].trim();
+  parts.forEach(p => {
+    if (p.startsWith("T=")) phone = p.substring(2).trim();
+    if (p.startsWith("B=")) amount = p.substring(2).replace(",", ".").trim();
   });
 
-  const now=new Date();
-  const item={
-    address, phone, amount,
+  const now = new Date();
+  const item = {
+    address,
+    phone,
+    amount,
     time: now.toLocaleTimeString(),
     date: now.toISOString().slice(0,10),
-    done:false
+    done: false
   };
+  // ❌ Проверка на полный дубликат (адрес + телефон + Betrag)
+    const isDuplicate = history.some(i =>
+      i.address === address &&
+      i.phone === phone &&
+      i.amount === amount &&
+      i.date === now.toISOString().slice(0,10)
+    );
 
-  // duplicate check
-  const isDuplicate = history.some(i=>i.address===address && i.phone===phone && i.amount===amount && i.date===now.toISOString().slice(0,10));
-  if(isDuplicate){
-    const index=history.findIndex(i=>i.address===address && i.phone===phone && i.amount===amount);
-    fill(history[index],index);
-    showScreen("home");
-    return;
-  }
+    if (isDuplicate) {
+      // если полностью совпадает — просто показать существующую запись
+      const index = history.findIndex(i =>
+        i.address === address &&
+        i.phone === phone &&
+        i.amount === amount
+      );
+      fill(history[index], index);
+      return;
+    }
 
   history.unshift(item);
-  history=history.slice(0,50);
-  localStorage.setItem("qrHistory",JSON.stringify(history));
+  history = history.slice(0, 50);
+  localStorage.setItem("qrHistory", JSON.stringify(history));
 
-  fill(item,0);
-  showScreen("home"); // после сканирования домой
+  fill(item, 0);
 }
 
-// ===== Scanner =====
-function startScanner(){
-  if(scannerRunning) return;
-  document.getElementById("reader").innerHTML='<div class="scan-frame"></div>';
-  qr=new Html5Qrcode("reader");
-  scannerRunning=true;
-  scanToggle.textContent="⏹ Stoppen";
+/* ---------------- Scanner ---------------- */
+function startScanner() {
+  if (scannerRunning) return;
+
+  document.getElementById("reader").innerHTML = '<div class="scan-frame"></div>';
+  qr = new Html5Qrcode("reader");
+  scannerRunning = true;
+
+  scanToggle.textContent = "⏹ Stoppen";
   scanToggle.classList.add("off");
 
   qr.start(
     { facingMode: "environment" },
-    { fps:20, qrbox:{width:220,height:220} },
-    text=>{
+    { fps: 20, qrbox: { width: 220, height: 220 } },
+    text => {
       stopScanner();
       parseQR(text);
     }
   );
-  scanTimer=setTimeout(stopScanner,20000);
+
+  scanTimer = setTimeout(stopScanner, 20000);
 }
-function stopScanner(){
-  if(!scannerRunning) return;
+
+function stopScanner() {
+  if (!scannerRunning) return;
   qr.stop().catch(()=>{});
-  scannerRunning=false;
-  scanToggle.textContent="▶️ Scannen";
+  scannerRunning = false;
+  scanToggle.textContent = "▶️ Scannen";
   scanToggle.classList.remove("off");
   clearTimeout(scanTimer);
 }
-scanToggle.onclick=()=>scannerRunning?stopScanner():startScanner();
 
-// ===== Edit Box =====
-let editIndex=null;
-function openEdit(item={},index=null){
-  editIndex=index;
-  editAddress.value=item.address||"";
-  editPhone.value=item.phone||"";
-  editAmount.value=item.amount||"";
-  editBox.style.display="block";
-}
-function closeEdit(){ editBox.style.display="none"; editIndex=null; streetHints.innerHTML=""; }
+scanToggle.onclick = () => scannerRunning ? stopScanner() : startScanner();
 
-document.getElementById("editBtn").onclick=()=>{
-  if(selectedIndex===null){ alert("Bitte einen Eintrag auswählen"); return; }
-  openEdit(history[selectedIndex],selectedIndex);
+
+
+document.getElementById("editBtn").onclick = () => {
+  if (selectedIndex === null) {
+    alert("Bitte einen Eintrag auswählen");
+    return;
+  }
+  openEdit(history[selectedIndex], selectedIndex);
 };
-document.getElementById("addBtn").onclick=()=>openEdit();
 
-editCancel.onclick=closeEdit;
-editSave.onclick=()=>{
-  if(!editAddress.value.trim()){ alert("Adresse fehlt"); return; }
-  const now=new Date();
-  const item={
-    address:editAddress.value.trim(),
-    phone:editPhone.value.trim(),
-    amount:editAmount.value.replace(",","."),
-    time:now.toLocaleTimeString(),
-    date:now.toISOString().slice(0,10),
-    done:false
+document.getElementById("addBtn").onclick = () => {
+  openEdit();
+};
+
+editSave.onclick = () => {
+  if (!editAddress.value.trim()) {
+    alert("Adresse fehlt");
+    return;
+  }
+
+  const now = new Date();
+  const item = {
+    address: editAddress.value.trim(),
+    phone: editPhone.value.trim(),
+    amount: editAmount.value.replace(",", "."),
+    time: now.toLocaleTimeString(),
+    date: now.toISOString().slice(0,10),
+    done: false
   };
-  if(editIndex!==null){ history[editIndex]=item; fill(item,editIndex); }
-  else { history.unshift(item); fill(item,0); }
-  localStorage.setItem("qrHistory",JSON.stringify(history));
+
+  if (editIndex !== null) {
+    history[editIndex] = item;
+    fill(item, editIndex);
+  } else {
+    history.unshift(item);
+    fill(item, 0);
+  }
+
+  localStorage.setItem("qrHistory", JSON.stringify(history));
   closeEdit();
   renderHistory();
   updateShiftReport();
 };
 
-// ===== Actions =====
-callBtn.onclick=()=>location.href="tel:"+lastData.phone;
-googleBtn.onclick=()=>location.href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(lastData.address);
-appleBtn.onclick=()=>location.href="https://maps.apple.com/?q="+encodeURIComponent(lastData.address);
 
-// ===== Delete =====
-document.getElementById("deleteBtn").onclick
+/* ---------------- Aktionen ---------------- */
+callBtn.onclick = () => location.href = "tel:" + lastData.phone;
+googleBtn.onclick = () =>
+  location.href = "https://www.google.com/maps/search/?api=1&query=" +
+  encodeURIComponent(lastData.address);
+appleBtn.onclick = () =>
+  location.href = "https://maps.apple.com/?q=" +
+  encodeURIComponent(lastData.address);
+
+/* ---------------- Löschen ---------------- */
+document.getElementById("deleteBtn").onclick = () => {
+  if (selectedIndex === null) return;
+  confirmBox.style.display = "block";
+};
+
+cancelDel.onclick = () => confirmBox.style.display = "none";
+
+okDel.onclick = () => {
+  history.splice(selectedIndex, 1);
+  selectedIndex = null;
+  localStorage.setItem("qrHistory", JSON.stringify(history));
+  confirmBox.style.display = "none";
+  renderHistory();
+  updateShiftReport();
+};
+
+/* ---------------- Schichtbericht ---------------- */
+function updateShiftReport() {
+  const today = new Date().toISOString().slice(0,10);
+  const todayItems = history.filter(i => i.date === today);
+
+  const sum = todayItems.reduce(
+    (a, i) => a + (parseFloat(i.amount) || 0),
+    0
+  );
+
+  document.getElementById("reportCount").textContent = todayItems.length;
+  document.getElementById("reportSum").textContent = sum.toFixed(2);
+
+  const lohn = parseFloat(document.getElementById("lohn").value) || 0;
+  const benzin = parseFloat(document.getElementById("benzin").value) || 0;
+  const sonstige = parseFloat(document.getElementById("sonstige").value) || 0;
+
+  document.getElementById("reportResult").textContent =
+    (sum - lohn - benzin - sonstige).toFixed(2);
+}
+
+["lohn","benzin","sonstige"].forEach(id =>
+  document.getElementById(id).addEventListener("input", updateShiftReport)
+);
+
+renderHistory();
+updateShiftReport();
+
+
+editCancel.onclick = closeEdit;
+
+let streets = [];
+
+// Загрузка улиц из файла
+fetch("Strasse.txt")
+  .then(res => res.text())
+  .then(text => {
+    streets = text
+      .split("\n")
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
+
+    console.log("Streets loaded:", streets.length);
+  })
+  .catch(err => console.error("Street file error", err));
+
+
+editAddress.addEventListener("input", () => {
+  const value = editAddress.value.trim().toLowerCase();
+  streetHints.innerHTML = "";
+
+  if (value.length < 2) return;
+
+  const matches = streets
+    .filter(s => s.toLowerCase().includes(value))
+    .slice(0, 6); // максимум 6 подсказок
+
+  matches.forEach(street => {
+    const div = document.createElement("div");
+    div.className = "street-hint";
+    div.textContent = street;
+
+    div.onclick = () => {
+      editAddress.value = street;
+      streetHints.innerHTML = "";
+    };
+
+    streetHints.appendChild(div);
+  });
+});
+</script>
+
+</body>
+</html>
