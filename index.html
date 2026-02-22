@@ -78,31 +78,38 @@ button { border:none; border-radius:14px; font-size:15px; padding:14px; cursor:p
   <h2>📷 QR-Scanner</h2>
   <button id="scanToggle" class="scan-btn">▶️ Scannen</button>
   <div id="reader"></div>
-  <div class="card">
-    <div class="row"><div><div class="label">Adresse</div><div class="value" id="address">—</div></div></div>
-    <div class="row">
-      <div><div class="label">Telefon</div><div class="value" id="phone">—</div></div>
-      <button class="call-btn" id="callBtn" disabled>📞</button>
-    </div>
-    <div class="row"><div><div class="label">Betrag</div><div class="value" id="amount">—</div></div></div>
-    <div class="buttons">
-      <button class="gray" id="editBtn">✏️ Bearbeiten</button>
-      <button class="gray" id="addBtn">➕ Manuell hinzufügen</button>
-    </div>
-  </div>
-  <div class="buttons">
-    <button class="google" id="googleBtn" disabled>Google Maps</button>
-    <button class="apple" id="appleBtn" disabled>Apple Maps</button>
-  </div>
+  
 </div>
 
 <div id="screen-home" class="screen active">
+  <div class="card">
+      <div class="row"><div><div class="label">Adresse</div><div class="value" id="address">—</div></div></div>
+      <div class="row">
+        <div><div class="label">Telefon</div><div class="value" id="phone">—</div></div>
+        <button class="call-btn" id="callBtn" disabled>📞</button>
+      </div>
+      <div class="row"><div><div class="label">Betrag</div><div class="value" id="amount">—</div></div></div>
+      <div class="buttons">
+        <button class="gray" id="editBtn">✏️ Bearbeiten</button>
+        <button class="gray" id="addBtn">➕ Manuell hinzufügen</button>
+      </div>
+    </div>
+    <div class="buttons">
+      <button class="google" id="googleBtn" disabled>Google Maps</button>
+      <button class="apple" id="appleBtn" disabled>Apple Maps</button>
+    </div>
+
   <div class="card">
     <div class="label">Verlauf</div>
     <div id="history"></div>
     <button id="deleteBtn" style="margin-top:10px;background:#ff3b30;color:white;">🗑 Löschen</button>
   </div>
 </div>
+
+
+
+<!-- ===== Edit Box ===== -->
+
 
 <div id="screen-report" class="screen">
   <div class="card" id="shiftReport">
@@ -116,7 +123,6 @@ button { border:none; border-radius:14px; font-size:15px; padding:14px; cursor:p
   </div>
 </div>
 
-<!-- ===== Edit Box ===== -->
 <div id="editBox">
   <div class="edit-content">
     <h3 style="text-align:center;margin-top:0;">Eintrag</h3>
