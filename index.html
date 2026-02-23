@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>QR Scanner 2.0</title>
+<title>QR Scanner</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://unpkg.com/html5-qrcode"></script>
@@ -12,127 +12,301 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   background: #f2f2f7;
   margin: 0;
-  padding: 0;
+  padding: 15px;
 }
-.screen { display: none; padding:15px; padding-bottom:90px; }
-.screen.active { display: block; }
+.app {
+  max-width: 420px;
+  margin: auto;
+}
+h2 {
+  text-align: center;
+}
+
+/* Scanner button */
+.scan-btn {
+  width: 100%;
+  margin: 6px 0 14px;
+  background: #34c759;
+  color: white;
+  font-size: 16px;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+}
+.scan-btn.off {
+  background: #aaa;
+}
+
+#reader {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: black;
+}
+
+/* Scan frame */
+.scan-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 220px;
+  height: 220px;
+  transform: translate(-50%, -50%);
+  border-radius: 18px;
+  border: 3px solid rgba(255,255,255,0.9);
+  box-shadow: 0 0 0 2000px rgba(0,0,0,0.35);
+  pointer-events: none;
+}
 
 .card {
-  background:white; border-radius:16px; padding:14px; margin-top:15px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.08);
+  background: white;
+  border-radius: 16px;
+  padding: 14px;
+  margin-top: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
 
-button { border:none; border-radius:14px; font-size:15px; padding:14px; cursor:pointer; }
-
-.scan-btn { width:100%; margin:6px 0 14px; background:#34c759; color:white; font-size:16px; border-radius:14px; }
-.scan-btn.off { background:#aaa; }
-
-.call-btn { background:#34c759; width:36px; height:36px; border-radius:50%; font-size:18px; color:white; display:flex; align-items:center; justify-content:center; }
-.call-btn:disabled { background:#ccc; }
-
-.buttons { display:flex; gap:10px; margin-top:15px; }
-.google { background:#4285f4; color:white; }
-.apple { background:black; color:white; }
-.gray { background:#ddd; }
-
-.row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #eee; }
-.row:last-child { border-bottom:none; }
-
-.label { color:#888; font-size:13px; }
-.value { font-size:16px; font-weight:500; word-break:break-word; }
-
-#reader { position:relative; border-radius:16px; overflow:hidden; background:black; }
-.scan-frame { position:absolute; top:50%; left:50%; width:220px; height:220px; transform:translate(-50%,-50%); border-radius:18px; border:3px solid rgba(255,255,255,0.9); box-shadow:0 0 0 2000px rgba(0,0,0,0.35); pointer-events:none; }
-
-.history-item { padding:8px; border-bottom:1px solid #eee; font-size:14px; }
-.history-item.active { background:#e5f0ff; }
-.history-item.done { opacity:0.5; text-decoration:line-through; background:#d1f5d3; }
-.history-item b { display:block; }
-
-#streetHints { background:#f2f2f7; border-radius:10px; margin-top:6px; max-height:160px; overflow-y:auto; }
-.street-hint { padding:10px; font-size:14px; border-bottom:1px solid #ddd; cursor:pointer; }
-.street-hint:hover { background:#e5e5ea; }
-.street-hint:last-child { border-bottom:none; }
-
-#editBox { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1000; }
-#editBox .edit-content { background:#fff; margin:20% auto; padding:20px; width:85%; max-width:340px; border-radius:16px; }
-
-#confirmBox { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1000; }
-#confirmBox .confirm-content { background:#fff; margin:40% auto; padding:20px; width:85%; max-width:320px; border-radius:16px; text-align:center; }
-
-#shiftReport input { width:120px; padding:2px 6px; border-radius:6px; border:1px solid #ccc; font-size:13px; height:28px; text-align:right; }
-
-.bottom-nav {
-  position:fixed; bottom:0; left:0; right:0; height:75px; background:white;
-  border-top:1px solid #ddd; display:flex; justify-content:space-around; align-items:center;
-  box-shadow:0 -2px 10px rgba(0,0,0,0.08); z-index:999;
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
 }
-.bottom-nav button { background:none; border:none; font-size:14px; flex:1; height:100%; color:#666; }
-.bottom-nav button.active { color:#007aff; font-weight:600; }
+.row:last-child { border-bottom: none; }
+
+.label { color: #888; font-size: 13px; }
+.value { font-size: 16px; font-weight: 500; word-break: break-word; }
+
+.call-btn {
+  background: #34c759;
+  border: none;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 50%;
+  font-size: 18px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex: 0 0 36px;
+}
+
+.weis {
+  background: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 50%;
+  font-size: 18px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex: 0 0 36px;
+}
+.call-btn:disabled { background: white }
+
+.buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+button {
+  flex: 1;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  font-size: 15px;
+}
+
+.google { background: #4285f4; color: white; }
+.apple { background: black; color: white; }
+.gray { background: #ddd; }
+
+.history-item {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+.history-item.active {
+  background: #e5f0ff;
+  border-radius: 10px;
+}
+.history-item b { display: block; }
+
+#shiftReport input {
+  width: 120px;        /* ← ВОТ ГЛАВНОЕ */
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  height: 28px;
+  text-align: right;
+}
+#editBox input {
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+#streetHints {
+  background: #f2f2f7;
+  border-radius: 10px;
+  margin-top: 6px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.street-hint {
+  padding: 10px;
+  font-size: 14px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.street-hint:last-child {
+  border-bottom: none;
+}
+
+.street-hint:hover {
+  background: #e5e5ea;
+}
+
+.history-item.done {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
 </style>
 </head>
+
 <body>
+<div class="app">
 
-<!-- ===== SCREENS ===== -->
-<div id="screen-scanner" class="screen">
-  <h2>📷 QR-Scanner</h2>
-  <button id="scanToggle" class="scan-btn">▶️ Scannen</button>
-  <div id="reader"></div>
-  
-</div>
+<button id="scanToggle" class="scan-btn">📷 QR-Scanner</button>
 
-<div id="screen-home" class="screen active">
-  <div class="card">
-      <div class="row"><div><div class="label">Adresse</div><div class="value" id="address">—</div></div></div>
-      <div class="row">
-        <div><div class="label">Telefon</div><div class="value" id="phone">—</div></div>
-        <button class="call-btn" id="callBtn" disabled>📞</button>
-      </div>
-      <div class="row"><div><div class="label">Betrag</div><div class="value" id="amount">—</div></div></div>
-      <div class="buttons">
-        <button class="gray" id="editBtn">✏️ Bearbeiten</button>
-        <button class="gray" id="addBtn">➕ Manuell hinzufügen</button>
-      </div>
+<div id="reader"></div>
+
+<div class="card">
+  <div class="row">
+    <div>
+      <div class="label">Adresse</div>
+      <div class="value" id="address">—</div>
     </div>
-    <div class="buttons">
-      <button class="google" id="googleBtn" disabled>Google Maps</button>
-      <button class="apple" id="appleBtn" disabled>Apple Maps</button>
-    </div>
+    <button class="weis" id="addBtn">➕ </button>
+  </div>
 
-  <div class="card">
-    <div class="label">Verlauf</div>
-    <div id="history"></div>
-    <button id="deleteBtn" style="margin-top:10px;background:#ff3b30;color:white;">🗑 Löschen</button>
+  <div class="row">
+    <div>
+      <div class="label">Telefon</div>
+      <div class="value" id="phone">—</div>
+    </div>
+    <button class="call-btn" id="callBtn" disabled>📞</button>
+  </div>
+
+  <div class="row">
+    <div>
+      <div class="label">Betrag</div>
+      <div class="value" id="amount">—</div>
+    </div>
+    <button class="weis" id="editBtn">✏️</button>
+  </div>
+
+  <div class="buttons">
+    <button class="google" id="googleBtn" disabled>Google Maps</button>
+    <button class="apple" id="appleBtn" disabled>Apple Maps</button>
   </div>
 </div>
 
-
-
-<!-- ===== Edit Box ===== -->
-
-
-<div id="screen-report" class="screen">
-  <div class="card" id="shiftReport">
-    <div class="label">Schichtbericht</div>
-    <div class="row"><span>Anzahl Adressen</span><b id="reportCount">0</b></div>
-    <div class="row"><span>Summe Betrag (€)</span><b id="reportSum">0.00</b></div>
-    <div class="row"><span>Lohn (€)</span><input id="lohn" type="number" step="0.01"></div>
-    <div class="row"><span>Benzin (€)</span><input id="benzin" type="number" step="0.01"></div>
-    <div class="row"><span>Sonstige (€)</span><input id="sonstige" type="number" step="0.01"></div>
-    <div class="row"><span><b>Ergebnis (€)</b></span><b id="reportResult">0.00</b></div>
+<div class="card">
+  <div class="label">Verlauf   </div>
+  <div id="history"></div>
+  <button id="deleteBtn" style="margin-top:10px;background:#ff3b30;color:white;">
+    🗑 Löschen
+  </button>
+</div>
+<div id="confirmBox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1000;">
+  <div style="background:#fff; margin:40% auto; padding:20px; width:85%; max-width:320px; border-radius:16px; text-align:center;">
+    <div style="font-size:16px; margin-bottom:20px;">
+      Eintrag wirklich löschen?
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button id="cancelDel" style="flex:1;padding:12px;border-radius:12px;border:none;background:#ddd;">
+        Abbrechen
+      </button>
+      <button id="okDel" style="flex:1;padding:12px;border-radius:12px;border:none;background:#ff3b30;color:white;">
+        Löschen
+      </button>
+    </div>
   </div>
 </div>
 
-<div id="editBox">
-  <div class="edit-content">
-    <h3 style="text-align:center;margin-top:0;">Eintrag</h3>
+<!-- SCHICHTBERICHT -->
+<div class="card" id="shiftReport">
+  <div class="label">Schichtbericht</div>
+
+  <div class="row">
+    <span>Anzahl Adressen</span>
+    <b id="reportCount">0</b>
+  </div>
+
+  <div class="row">
+    <span>Summe Betrag (€)</span>
+    <b id="reportSum">0.00</b>
+  </div>
+
+  <div class="row">
+    <span>Lohn (€)</span>
+    <input id="lohn" type="number" step="0.01">
+  </div>
+
+  <div class="row">
+    <span>Benzin (€)</span>
+    <input id="benzin" type="number" step="0.01">
+  </div>
+
+  <div class="row">
+    <span>Sonstige (€)</span>
+    <input id="sonstige" type="number" step="0.01">
+  </div>
+
+  <div class="row">
+    <span><b>Ergebnis (€)</b></span>
+    <b id="reportResult">0.00</b>
+  </div>
+</div>
+
+<!-- MANUELL HINZUFÜGEN / BEARBEITEN -->
+<div id="editBox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1000;">
+  <div style="
+    background:#fff;
+    margin:20% auto;
+    padding:20px;
+    width:85%;
+    max-width:340px;
+    border-radius:16px;
+  ">
+    <h3 style="margin-top:0;text-align:center">Eintrag</h3>
+
     <label class="label">Adresse</label>
-    <input id="editAddress" type="search" autocomplete="off">
+    <input id="editAddress" type="text">
     <div id="streetHints"></div>
+
     <label class="label">Telefon</label>
     <input id="editPhone" type="tel">
+
     <label class="label">Betrag (€)</label>
     <input id="editAmount" type="number" step="0.01">
+
     <div style="display:flex; gap:10px; margin-top:15px;">
       <button id="editCancel" class="gray">Abbrechen</button>
       <button id="editSave" class="google">Speichern</button>
@@ -140,70 +314,43 @@ button { border:none; border-radius:14px; font-size:15px; padding:14px; cursor:p
   </div>
 </div>
 
-<!-- ===== Confirm Box ===== -->
-<div id="confirmBox">
-  <div class="confirm-content">
-    <div style="font-size:16px; margin-bottom:20px;">Eintrag wirklich löschen?</div>
-    <div style="display:flex; gap:10px;">
-      <button id="cancelDel" style="flex:1;padding:12px;border-radius:12px;border:none;background:#ddd;">Abbrechen</button>
-      <button id="okDel" style="flex:1;padding:12px;border-radius:12px;border:none;background:#ff3b30;color:white;">Löschen</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== Bottom Navigation ===== -->
-<div class="bottom-nav">
-  <button data-screen="scanner">📷<br>Scanner</button>
-  <button data-screen="home">🏠<br>Home</button>
-  <button data-screen="report">📊<br>Bericht</button>
 </div>
 
 <script>
-// ===== Variables =====
-let qr, scannerRunning=false, scanTimer=null;
-let history = JSON.parse(localStorage.getItem("qrHistory")||"[]");
-const today = new Date().toISOString().slice(0,10);
-history = history.filter(i=>i.date===today);
-localStorage.setItem("qrHistory",JSON.stringify(history));
-let selectedIndex=null, lastData={};
-
-// ===== Elements =====
+const streetHints = document.getElementById("streetHints");
 const addressEl = document.getElementById("address");
 const phoneEl = document.getElementById("phone");
 const amountEl = document.getElementById("amount");
+
 const callBtn = document.getElementById("callBtn");
 const googleBtn = document.getElementById("googleBtn");
 const appleBtn = document.getElementById("appleBtn");
 const scanToggle = document.getElementById("scanToggle");
 
+const confirmBox = document.getElementById("confirmBox");
+const okDel = document.getElementById("okDel");
+const cancelDel = document.getElementById("cancelDel");
+
+let qr;
+let scannerRunning = false;
+let scanTimer = null;
+
+let history = JSON.parse(localStorage.getItem("qrHistory") || "[]");
+// 🔄 Автоочистка данных не за сегодня
+const today = new Date().toISOString().slice(0,10);
+history = history.filter(item => item.date === today);
+localStorage.setItem("qrHistory", JSON.stringify(history));
+
+let selectedIndex = null;
+let lastData = {};
+
+// ===== MANUELL EDIT BOX =====
 const editBox = document.getElementById("editBox");
 const editAddress = document.getElementById("editAddress");
 const editPhone = document.getElementById("editPhone");
 const editAmount = document.getElementById("editAmount");
 const editSave = document.getElementById("editSave");
 const editCancel = document.getElementById("editCancel");
-const streetHints = document.getElementById("streetHints");
-
-const screens = {
-  scanner: document.getElementById("screen-scanner"),
-  home: document.getElementById("screen-home"),
-  report: document.getElementById("screen-report")
-};
-const navButtons = document.querySelectorAll(".bottom-nav button");
-
-// ===== Navigation =====
-function showScreen(name){
-  if(scannerRunning && name!=="scanner") stopScanner();
-  Object.values(screens).forEach(s=>s.classList.remove("active"));
-  navButtons.forEach(b=>b.classList.remove("active"));
-  screens[name].classList.add("active");
-  document.querySelector(`[data-screen="${name}"]`).classList.add("active");
-}
-navButtons.forEach(btn=>btn.onclick=()=>showScreen(btn.dataset.screen));
-showScreen("home"); // старт с Домика
-
-// ===== Functions =====
-// сюда вставим все функции: fill, renderHistory, parseQR, startScanner, stopScanner, редактирование, удаление, отчет, подсказки
 
 let editIndex = null;
 
