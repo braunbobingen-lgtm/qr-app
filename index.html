@@ -291,6 +291,7 @@ button {
 
 <!-- MANUELL HINZUFÜGEN / BEARBEITEN -->
 <div id="editBox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1000;">
+  
   <div style="
     background:#fff;
     margin:20% auto;
@@ -299,36 +300,47 @@ button {
     max-width:340px;
     border-radius:16px;
   ">
+
     <h3 style="margin-top:0;text-align:center">Eintrag</h3>
 
-    <label class="label">Adresse</label>
-    <input id="editAddress"
-       type="text"
-       autocomplete="off"
-       autocorrect="off"
-       autocapitalize="off"
-       spellcheck="false"
-       inputmode="text">
-    <div id="streetHints"></div>
+    <!-- 👇 ВАЖНО: form начинается здесь -->
+    <form autocomplete="off">
 
-    <label class="label">Telefon</label>
-    <input id="editPhone"
-       type="tel"
-       autocomplete="off"
-       autocorrect="off"
-       spellcheck="false"
-       inputmode="tel">
+      <label class="label">Adresse</label>
+      <input 
+        name="field1"
+        id="editAddress"
+        type="text"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false">
 
-    <label class="label">Betrag (€)</label>
-    <input id="editAmount"
-       type="text"
-       autocomplete="off"
-       inputmode="decimal">
+      <div id="streetHints"></div>
+
+      <label class="label">Telefon</label>
+      <input 
+        name="field2"
+        id="editPhone"
+        type="tel"
+        autocomplete="off">
+
+      <label class="label">Betrag (€)</label>
+      <input 
+        name="field3"
+        id="editAmount"
+        type="text"
+        inputmode="decimal"
+        autocomplete="off">
+
+    </form>
+    <!-- 👆 form заканчивается здесь -->
 
     <div style="display:flex; gap:10px; margin-top:15px;">
-      <button id="editCancel" class="gray">Abbrechen</button>
-      <button id="editSave" class="google">Speichern</button>
+      <button type="button" id="editCancel" class="gray">Abbrechen</button>
+      <button type="button" id="editSave" class="google">Speichern</button>
     </div>
+
   </div>
 </div>
 
@@ -680,6 +692,7 @@ editAddress.addEventListener("input", () => {
 
 </body>
 </html>
+
 
 
 
