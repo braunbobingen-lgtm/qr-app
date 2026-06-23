@@ -244,13 +244,27 @@ button {
     position:absolute;
     right:20px;
     top:50px;
+}
+#closeScanner,
+#torchBtn{
+    position:absolute;
+    top:50px;
     width:50px;
     height:50px;
     border:none;
     border-radius:50%;
-    font-size:28px;
-    background:rgba(255,255,255,.2);
+    background:rgba(0,0,0,.4);
     color:white;
+    font-size:24px;
+    z-index:10000;
+}
+
+#closeScanner{
+    right:20px;
+}
+
+#torchBtn{
+    left:20px;
 }
 
 </style>
@@ -272,7 +286,10 @@ button {
     <div class="scan-line"></div>
   </div>
 
+  
   <button id="closeScanner">✕</button>
+
+<button id="torchBtn">🔦</button>
 
 </div>
 
@@ -567,7 +584,7 @@ function parseQR(text) {
 
 /* ---------------- Scanner ---------------- */
 let scanner;
-
+let torchOn = false;
 async function startScanner(){
 
     document.getElementById("scannerOverlay").style.display="block";
@@ -613,12 +630,50 @@ function stopScanner(){
 
     document.getElementById("scannerOverlay").style.display="none";
 
+    torchOn = false;
+    document.getElementById("torchBtn").textContent = "🔦";
+
     scanToggle.textContent="▶️ Scannen";
+    
+
+
 }
 
 scanToggle.onclick = () => scannerRunning ? stopScanner() : startScanner();
 
 document.getElementById("closeScanner").onclick=stopScanner;
+
+document.getElementById("closeScanner").onclick = () => {
+    stopScanner();
+};
+
+document.getElementById("torchBtn").onclick = async () => {
+
+    if (!scanner) return;
+
+    try {
+
+        if (torchOn) {
+
+            await scanner.turnFlashOff();
+            torchOn = false;
+            document.getElementById("torchBtn").textContent = "🔦";
+
+        } else {
+
+            await scanner.turnFlashOn();
+            torchOn = true;
+            document.getElementById("torchBtn").textContent = "💡";
+
+        }
+
+    } catch (e) {
+
+        alert("Фонарик не поддерживается этим устройством");
+
+    }
+};
+
 
 document.getElementById("editBtn").onclick = () => {
   if (selectedIndex === null) {
